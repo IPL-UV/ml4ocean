@@ -1,0 +1,19 @@
+name: 2019_ml_ocean
+channels:
+- defaults
+- conda-forge
+dependencies:
+- scipy
+- numpy
+- scikit-learn
+- matplotlib
+- pandas
+- numba
+- h5py
+- xarray
+- pytables
+- dask
+- cartopy
+- seaborn
+- jupyterlab
+- ipykernel
