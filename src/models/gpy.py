@@ -77,6 +77,7 @@ class SVGP(BaseEstimator, RegressorMixin):
         max_iters=200,
         optimizer="scg",
         verbose=None,
+        n_restarts=0,
     ):
         self.kernel = kernel
         self.x_variance = x_variance
@@ -85,6 +86,7 @@ class SVGP(BaseEstimator, RegressorMixin):
         self.max_iters = max_iters
         self.optimizer = optimizer
         self.verbose = verbose
+        self.n_restarts = n_restarts
 
     def fit(self, X, y):
         # print(X)
@@ -112,10 +114,14 @@ class SVGP(BaseEstimator, RegressorMixin):
         )
 
         # Optimize
-        # gp_model.inducing_inputs.fix()
-        gp_model.optimize(
-            self.optimizer, messages=self.verbose, max_iters=self.max_iters
-        )
+        if self.n_restarts > 0:
+            gp_model.optimize_restarts(
+                num_restarts=self.n_restarts, robust=True, verbose=self.verbose
+            )
+        else:
+            gp_model.optimize(
+                self.optimizer, messages=self.verbose, max_iters=self.max_iters
+            )
 
         self.gp_model = gp_model
 
