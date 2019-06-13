@@ -15,6 +15,10 @@ Using python for ocean applications. For now just includes a few useful demo mac
     conda env create -f environment.yml
     source activate 2019_ml_ocean
    ```
+4. (Optional) If you already have the sample `.yml` file then to save time whenever I upgrade it, just run these commands.
+   ```bash
+   conda env update -f environment.yml
+   ```
 
 ---
 
