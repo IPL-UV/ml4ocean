@@ -4,7 +4,9 @@ scikit-learn estimators for convenience."""
 import GPy
 import numpy as np
 from sklearn.utils import check_random_state
+from sklearn.utils.validation import check_X_y, check_array
 from sklearn.base import BaseEstimator, RegressorMixin
+from scipy.cluster.vq import kmeans2
 
 
 class SGP(BaseEstimator, RegressorMixin):
@@ -25,6 +27,7 @@ class SGP(BaseEstimator, RegressorMixin):
         self.verbose = verbose
 
     def fit(self, X, y):
+        X, y = check_X_y(X, y, multi_output=True, y_numeric=True)
 
         n_samples, d_dimensions = X.shape
 
@@ -81,17 +84,23 @@ class SVGP(BaseEstimator, RegressorMixin):
     ):
         self.kernel = kernel
         self.x_variance = x_variance
-        self.n_inducing = n_inducing
-        self.rng = np.random.RandomState(random_state)
+        self.n_inducing = int(n_inducing)
+        self.random_state = random_state
         self.max_iters = max_iters
         self.optimizer = optimizer
         self.verbose = verbose
         self.n_restarts = n_restarts
 
     def fit(self, X, y):
+
+        self.rng = np.random.RandomState(self.random_state)
         # print(X)
-        # print(y)
+        if np.ndim(y) < 2:
+            y = y.reshape(-1, 1)
         n_samples, d_dimensions = X.shape
+
+        self.X_train = X
+        self.y_train = y
 
         # default Kernel Function
         if self.kernel is None:
@@ -106,7 +115,8 @@ class SVGP(BaseEstimator, RegressorMixin):
             x_variance = None
 
         # Get inducing points
-        z = self.rng.uniform(X.min(), X.max(), (self.n_inducing, d_dimensions))
+        # print(self.n_inducing)
+        z = kmeans2(X, self.n_inducing, minit="points")[0]
 
         # Kernel matrix
         gp_model = GPy.models.SparseGPRegression(
@@ -122,7 +132,6 @@ class SVGP(BaseEstimator, RegressorMixin):
             gp_model.optimize(
                 self.optimizer, messages=self.verbose, max_iters=self.max_iters
             )
-
         self.gp_model = gp_model
 
         return self
@@ -138,7 +147,7 @@ class SVGP(BaseEstimator, RegressorMixin):
             mean, var = self.gp_model.predict(X)
 
         if return_std:
-            return mean, np.sqrt(var)
+            return mean.squeeze(), np.sqrt(var).squeeze()
         else:
-            return mean
+            return mean.squeeze()
 
