@@ -145,7 +145,7 @@ class MOSVGP(object):
         # we might have new data
         self.model.X.assign(X, session=self.sess)
         self.model.Y.assign(Y, session=self.sess)
-        # self.model.feature.Z.assign(feature, session=self.sess)
+        self.model.feature.feat_list.assign(feature, session=self.sess)
 
         self.model.q_mu.assign(np.zeros((self.num_inducing, Y.shape[1])), session=self.sess)
         self.model.q_sqrt.assign(np.tile(np.eye(self.num_inducing)[None], [Y.shape[1], 1, 1]), session=self.sess)
