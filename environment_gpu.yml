@@ -18,6 +18,6 @@ dependencies:
 - jupyterlab
 - ipykernel
 - GPy
-- tensorflow        # Tensor library (Anaconda CPU enhanced)
 - pip:
+  - tensorflow-gpu  # Tensor library
   - gpflow          # tensor GP library
