@@ -139,15 +139,37 @@ class SVGP(BaseEstimator, RegressorMixin):
     def display_model(self):
         return self.gp_model
 
-    def predict(self, X, return_std=False, noiseless=True):
+    def predict(self, X, return_std=False, batch_size=1000):
 
-        if noiseless:
-            mean, var = self.gp_model.predict_noiseless(X)
+        if X.shape[0] > batch_size:
+            mean, var = self.batch_predict(X, batch_size)
         else:
-            mean, var = self.gp_model.predict(X)
+            mean, var = self.gp_model.predict_noiseless(X)
 
         if return_std:
             return mean.squeeze(), np.sqrt(var).squeeze()
         else:
             return mean.squeeze()
 
+    def predict_y(self, X, return_std=False, batch_size=1000):
+
+        mean, var = self.gp_model.predict(X)
+
+        if return_std:
+            return mean.squeeze(), np.sqrt(var).squeeze()
+        else:
+            return mean.squeeze()
+
+    def batch_predict(self, Xs, batchsize=1000):
+        ms, vs = [], []
+        n = max(len(Xs) / batchsize, 1)  # predict in small batches
+        for xs in np.array_split(Xs, n):
+            m, v = self.gp_model.predict_noiseless(xs)
+
+            ms.append(m)
+            vs.append(v)
+
+        return (
+            np.concatenate(ms, 1),
+            np.concatenate(vs, 1),
+        )  # num_posterior_samples, N_test, D_y
