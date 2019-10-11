@@ -3,22 +3,31 @@ channels:
 - defaults
 - conda-forge
 dependencies:
+- python=3.6
+# Standard Python Libraries
 - scipy
 - numpy
-- scikit-learn
-- matplotlib
-- statsmodels
 - pandas
-- numba
-- h5py
-- xarray
-- pytables
-- dask
+# Plotting Libraries
+- matplotlib
 - cartopy
 - seaborn
-- jupyterlab
+# ML Libraries
+- scikit-learn
+- statsmodels
+# Data Structures
+- h5py
+- xarray
+# Logistics
 - ipykernel
+# Special ML Libraries
 - GPy
-- tensorflow        # Tensor library (Anaconda CPU enhanced)
+# Geoprocessing
+- geopandas
+- shapely
+- descartes
+# Tensor Libraries
 - pip:
-  - gpflow          # tensor GP library
+  - tensorflow==2.0.0
+  - tensorflow-probability==0.8
+  - -e "git+https://github.com/GPflow/GPflow.git@develop-2.0#egg=gpflow"

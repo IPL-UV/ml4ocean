@@ -1,25 +1,35 @@
-name: 2019_ml_ocean_gpu
+name: 2019_ml_ocn_gpu
 channels:
 - defaults
 - conda-forge
 dependencies:
+- python=3.6
+# Standard Python Libraries
 - scipy
 - numpy
-- scikit-learn
-- matplotlib
-- statsmodels
 - pandas
-- numba
-- h5py
-- xarray
-- pytables
-- dask
+# Plotting Libraries
+- matplotlib
 - cartopy
 - seaborn
-- jupyterlab
+# ML Libraries
+- scikit-learn
+- statsmodels
+# Data Structures
+- h5py
+- xarray
+# Logistics
 - ipykernel
+# Special ML Libraries
 - GPy
-- tensorflow-gpu
+# Geoprocessing
+- geopandas
+- shapely
+- descartes
+# Tensor Libraries
+- tensorflow        # Tensor library (Anaconda CPU enhanced)
 - pip:
-  - gpflow          # tensor GP library
-  # - tensorflow-gpu  # Tensor library
+  - tensorflow-gpu==2.0.0
+  - tensorflow-probability==0.8
+  - -e "git+https://github.com/google/edward2.git#egg=edward2"
+  - -e "git+https://github.com/GPflow/GPflow.git@develop-2.0#egg=gpflow"
