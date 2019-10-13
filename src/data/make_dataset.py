@@ -1,30 +1,45 @@
 # -*- coding: utf-8 -*-
-import click
-import logging
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
+import pandas as pd
+
+DATA_PATH = "/home/emmanuel/projects/2020_ml_ocn/data/RAW/CONTROL/"
+CONTROL1 = "NORTH_ATLANTIC"
+CONTROL2 = "SUBTROPICAL_GYRES"
 
 
-@click.command()
-@click.argument('input_filepath', type=click.Path(exists=True))
-@click.argument('output_filepath', type=click.Path())
-def main(input_filepath, output_filepath):
-    """ Runs data processing scripts to turn raw data from (../raw) into
-        cleaned data ready to be analyzed (saved in ../processed).
-    """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+class DataLoad:
+    def __init__(self):
+        self.core_vars = [
+            "sla",
+            "PAR",
+            "RHO_WN_412",
+            "RHO_WN_443",
+            "RHO_WN_490",
+            "RHO_WN_555",
+            "RHO_WN_670",
+            "MLD",
+        ]
 
+        self.core_outputs = ["sla"]
+        self.loc_vars = ["lat", "lon", "doy"]
+        self.meta_vars = ["wmo", "n_cycle"]
 
-if __name__ == '__main__':
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
+    def load_control_data(self, control="na"):
+        """This will load the control data:
+        * North Atlantic Region
+        * Subtropical Gyres
+        """
+        # choose control group data
+        if control == "na":
+            region = "NORTH_ATLANTIC"
+            filename_ext = "NA"
+        elif control == "stg":
+            region = "SUBTROPICAL_GYRES"
+            filename_ext = "STG"
+        else:
+            raise ValueError(f"Unrecognized control group: {control}")
 
-    # not used in this stub but often useful for finding various files
-    project_dir = Path(__file__).resolve().parents[2]
+        # Load Data
+        X = pd.read_csv(f"{DATA_PATH}{region}/X_INPUT_{filename_ext}.csv")
+        y = pd.read_csv(f"{DATA_PATH}{region}/BBP_OUTPUT_{filename_ext}.csv")
 
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    load_dotenv(find_dotenv())
-
-    main()
+        return X, y
