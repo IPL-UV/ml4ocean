@@ -28,7 +28,7 @@ def plot_pairplots(dataframe: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_geolocations(gpd_df: gpd.GeoDataFrame) -> None:
+def plot_geolocations(gpd_df: gpd.GeoDataFrame, color='red') -> None:
 
     # get the background map
     path = gpd.datasets.get_path("naturalearth_lowres")
@@ -41,6 +41,6 @@ def plot_geolocations(gpd_df: gpd.GeoDataFrame) -> None:
     world_df.plot(ax=ax, color="gray")
 
     # add the locations of the dataset
-    gpd_df.plot(ax=ax, color="red", markersize=2)
+    gpd_df.plot(ax=ax, color=color, markersize=2)
 
     plt.show()

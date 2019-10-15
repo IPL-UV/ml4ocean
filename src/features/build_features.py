@@ -1,4 +1,5 @@
 import geopandas as gpd
+import pandas as pd
 from shapely.geometry import Point, Polygon
 
 
@@ -8,7 +9,7 @@ def get_geodataframe(dataframe: pd.DataFrame) -> gpd.GeoDataFrame:
     have a special column for geometry. This will make plotting 
     a lot easier."""
     # get polygons
-    geometry = [Point(xy) for xy in zip(X_na["lon"], X_na["lat"])]
+    geometry = [Point(xy) for xy in zip(dataframe["lon"], dataframe["lat"])]
 
     # coordinate systems
     crs = {"init": "epsg:4326"}
