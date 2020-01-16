@@ -3,8 +3,8 @@ import pandas as pd
 from typing import Tuple
 
 DATA_PATH = "/home/emmanuel/projects/2020_ml_ocn/data/RAW/CONTROL/"
-CONTROL1 = "NORTH_ATLANTIC"
-CONTROL2 = "SUBTROPICAL_GYRES"
+region1 = "NORTH_ATLANTIC"
+region2 = "SUBTROPICAL_GYRES"
 
 # TODO: more documentation for dataloader
 
@@ -14,7 +14,7 @@ class DataLoader:
     
     Options:
     --------
-    * Control Data
+    * region Data
         - North Atlantic
         - Subtropical Gyres (STG)
     
@@ -41,67 +41,99 @@ class DataLoader:
         self.loc_vars = ["lat", "lon", "doy"]
         self.meta_vars = ["wmo", "n_cycle"]
 
-    def load_control_data(
-        self, control: str = "na"
+    def load_data(
+        self, region: str = "na", drop_meta: bool = False
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """This will load the control data:
+        """This will load the region data:
+        * North Atlantic Region
+        * Subtropical Gyres
+
+        Parameters
+        ----------
+        region : str, {'NA', 'STG'}
+            the region to be extracted
+
+        Returns
+        -------
+        df : pd.DataFrame
+            a pandas dataframe containing the dataset
+
+        """
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
+
+        # extract data
+        X = pd.read_csv(f"{DATA_PATH}{region}/X_INPUT_{filename_ext}.csv")
+
+        X = self._drop_meta(X, drop_meta)
+
+        return X
+
+    def load_ouputs(
+        self, region: str = "na", drop_meta: bool = False
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """This will load the region data:
         * North Atlantic Region
         * Subtropical Gyres
         """
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
 
-        return pd.read_csv(f"{DATA_PATH}{region}/X_INPUT_{filename_ext}.csv")
+        X = pd.read_csv(f"{DATA_PATH}{region}/BBP_OUTPUT_{filename_ext}.csv")
 
-    def load_control_ouputs(
-        self, control: str = "na"
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """This will load the control data:
-        * North Atlantic Region
-        * Subtropical Gyres
-        """
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+        X = self._drop_meta(X, drop_meta)
 
-        return pd.read_csv(f"{DATA_PATH}{region}/BBP_OUTPUT_{filename_ext}.csv")
+        return X
 
-    def load_control_temperature(self, control: str = "na") -> pd.DataFrame:
-        """This loads the control data for temperature"""
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+    def load_temperature(
+        self, region: str = "na", drop_meta: bool = False
+    ) -> pd.DataFrame:
+        """This loads the region data for temperature"""
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
         X = pd.read_csv(
             f"{DATA_PATH}{region}/MATRIX_TEMP_{filename_ext}.txt", sep=" ", header=None
         )
         X = X.rename(columns={0: "wmo", 1: "n_cycle"})
 
+        X = self._drop_meta(X, drop_meta)
+
         return X
 
-    def load_control_density(self, control: str = "na") -> pd.DataFrame:
-        """This loads the control data for density"""
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+    def load_density(self, region: str = "na", drop_meta: bool = False) -> pd.DataFrame:
+        """This loads the region data for density"""
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
 
         X = pd.read_csv(
             f"{DATA_PATH}{region}/MATRIX_DENS_{filename_ext}.txt", sep=" ", header=None
         )
         X = X.rename(columns={0: "wmo", 1: "n_cycle"})
+
+        X = self._drop_meta(X, drop_meta)
+
         return X
 
-    def load_control_salinity(self, control: str = "na") -> pd.DataFrame:
-        """This loads the control data for salinity"""
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+    def load_salinity(
+        self, region: str = "na", drop_meta: bool = False
+    ) -> pd.DataFrame:
+        """This loads the region data for salinity"""
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
 
         X = pd.read_csv(
             f"{DATA_PATH}{region}/MATRIX_PSAL_{filename_ext}.txt", sep=" ", header=None
         )
         X = X.rename(columns={0: "wmo", 1: "n_cycle"})
+
+        X = self._drop_meta(X, drop_meta)
+
         return X
 
-    def load_control_spicy(self, control: str = "na") -> pd.DataFrame:
-        """This loads the control data for 'spiciness'"""
-        # choose control group data
-        region, filename_ext = self._get_control_ext(control)
+    def load_spicy(self, region: str = "na", drop_meta: bool = False) -> pd.DataFrame:
+        """This loads the region data for 'spiciness'"""
+        # choose region group data
+        region, filename_ext = self._get_region_ext(region.lower())
 
         X = pd.read_csv(
             f"{DATA_PATH}{region}/MATRIX_SPICINESS_{filename_ext}.txt",
@@ -109,13 +141,22 @@ class DataLoader:
             header=None,
         )
         X = X.rename(columns={0: "wmo", 1: "n_cycle"})
+
+        X = self._drop_meta(X, drop_meta)
+
         return X
 
-    def _get_control_ext(self, control="na"):
-        # choose control group data
-        if control == "na":
+    def _get_region_ext(self, region="na"):
+        # choose region group data
+        if region == "na":
             return "NORTH_ATLANTIC", "NA"
-        elif control == "stg":
+        elif region == "stg":
             return "SUBTROPICAL_GYRES", "STG"
         else:
-            raise ValueError(f"Unrecognized control group: {control}")
+            raise ValueError(f"Unrecognized region group: {region}")
+
+    def _drop_meta(self, df: pd.DataFrame, drop_meta: bool = False) -> pd.DataFrame:
+        if drop_meta:
+            return df.drop(self.meta_vars, axis=1)
+        else:
+            return df

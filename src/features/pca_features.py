@@ -1,55 +1,63 @@
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator
-from typing import Tuple, Union
+from typing import Tuple, Union, List, Optional
 import pandas as pd
 import numpy as np
 
 
 def transform_all(
-    df_temp: pd.DataFrame,
-    df_sal: pd.DataFrame,
-    df_dens: pd.DataFrame,
-    df_spicy: pd.DataFrame,
-    n_components: int = 10,
-    random_state: int = 123,
+    dfs: List[pd.DataFrame], pca_model: Optional[List[pd.DataFrame]]=None, n_components: int = 10, random_state: int = 123
 ) -> Tuple[pd.DataFrame, BaseEstimator]:
     """Applies a PCA transform on all of the variables
     concatenated."""
-    X = pd.concat([df_temp, df_sal, df_dens, df_spicy], axis=1)
+    X = pd.concat(dfs, axis=1)
 
     # perform PCA transformation
-    pca_model = PCA(n_components=n_components, random_state=random_state)
+    if pca_model == None:
+        pca_model = PCA(n_components=n_components, random_state=random_state)
 
-    # fit PCA model
-    X = pca_model.fit_transform(X)
+        # fit PCA model
+        X = pca_model.fit_transform(X)
+        return X, pca_model
+    else:
+        X = pca_model.transform(X)
 
-    return X, pca_model
+        return X
 
 
 def transform_individual(
-    df_temp: pd.DataFrame,
-    df_sal: pd.DataFrame,
-    df_dens: pd.DataFrame,
-    df_spicy: pd.DataFrame,
+    dfs: List[pd.DataFrame],
     n_components: int = 10,
     random_state: int = 123,
+    **kwargs: Tuple[int, str, bool, float]
 ) -> Tuple[pd.DataFrame, BaseEstimator]:
-    """Applies a PCA transform on all of the variables
-    concatenated."""
+    """Applies a PCA transform on the list of dataframes concatenated.
+    
+    Parameters
+    ----------
+    dfs: List[pd.DataFrame]
+        a list of pandas dataframes to perform the PCA transformation
+
+    random_state: int, default=123
+        the random state for the PCA transformations
+
+    kwargs: Tuple[int, str, bool, float]
+        some kwargs for the PCA transformation
+
+    Returns
+    -------
+    X: List[pd.DataFrame]
+        a list of pandas dataframes
+    
+
+    """
 
     # perform PCA transformation
-    pca_models = {
-        "temp": PCA(n_components=n_components, random_state=random_state),
-        "dens": PCA(n_components=n_components, random_state=random_state),
-        "sal": PCA(n_components=n_components, random_state=random_state),
-        "spicy": PCA(n_components=n_components, random_state=random_state),
-    }
+    pca_models = [
+        PCA(n_components=n_components, random_state=random_state, **kwargs)
+    ] * len(dfs)
 
     # fit PCA model
+    dfs = [pca_model.fit_transform(df) for df, pca_model in zip(dfs, pca_models)]
 
-    X_temp = pca_models["temp"].fit_transform(df_temp)
-    X_dens = pca_models["dens"].fit_transform(df_dens)
-    X_sal = pca_models["sal"].fit_transform(df_sal)
-    X_spicy = pca_models["spicy"].fit_transform(df_spicy)
-
-    return np.hstack([X_temp, X_dens, X_sal, X_spicy]), pca_models
+    return dfs, pca_models

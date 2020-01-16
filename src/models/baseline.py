@@ -78,7 +78,7 @@ def train_rf_model(
     """
     # initialize baseline RF model
     rf_model = RandomForestRegressor(
-        n_estimators=1000,
+        n_estimators=1500,
         criterion="mse",
         n_jobs=-1,
         random_state=123,
