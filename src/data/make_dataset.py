@@ -160,3 +160,36 @@ class DataLoader:
             return df.drop(self.meta_vars, axis=1)
         else:
             return df
+
+
+def load_standard_data(region: str = "NA"):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    # load data
+    X = dataloader.load_data(region=region, drop_meta=True)
+
+    return X
+
+
+def load_high_dim_data(region="NA"):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+    drop_meta = True
+
+    X_temp = dataloader.load_temperature(region=region, drop_meta=drop_meta)
+    X_dens = dataloader.load_density(region=region, drop_meta=drop_meta)
+    X_sal = dataloader.load_salinity(region=region, drop_meta=drop_meta)
+    X_spicy = dataloader.load_spicy(region=region, drop_meta=drop_meta)
+
+    return X_temp, X_dens, X_sal, X_spicy
+
+
+def load_labels(region="NA"):
+    # initialize dataloader
+    dataloader = DataLoader()
+    drop_meta = True
+
+    return dataloader.load_ouputs(region=region, drop_meta=drop_meta)

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -13,10 +13,12 @@ import seaborn as sns
 plt.style.use("seaborn-poster")
 
 
-def plot_mo_stats(df: pd.DataFrame, stat: str, save_name: Optional[str] = None) -> None:
+def plot_mo_stats(
+    df: pd.DataFrame, stat: str, color: str = "blue", save_name: Optional[str] = None
+) -> None:
 
     # MAE plot
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7, 5))
 
     if stat.lower() == "mae":
         ylabel = "Mean Absolute Error"
@@ -30,18 +32,25 @@ def plot_mo_stats(df: pd.DataFrame, stat: str, save_name: Optional[str] = None) 
     else:
         raise ValueError(f"Unrecognized stat: {stat}")
 
-    df.plot(y=stat.lower(), ax=ax, linewidth=5)
+    df.plot(y=stat.lower(), ax=ax, linewidth=10, color=color)
     if stat.lower() == "r2":
         ax.set_ylim([0, 1])
 
-    ax.set_xlabel(r"Depths (Pressure)", fontsize=20)
-    ax.set_ylabel(ylabel, fontsize=20)
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     ax.legend([])
     ax.grid()
     plt.tight_layout()
 
     if save_name is not None:
-        fig.savefig(SAVE_PATH + f"{save_name}_{stat}.png")
+        fig.savefig(
+            SAVE_PATH + f"mo_{save_name}_{stat}.png",
+            dpi=200,
+            transparent=True,
+            # facecolor=False,
+        )
     else:
         plt.show()
 
@@ -103,7 +112,10 @@ def plot_pairplots(dataframe: pd.DataFrame) -> None:
 
 
 def plot_geolocations(
-    gpd_df: gpd.GeoDataFrame, color="red", save_name: Optional[str] = None
+    gpd_dfs: List[gpd.GeoDataFrame],
+    colors=List[str],
+    return_plot: Optional[bool] = False,
+    save_name: Optional[str] = False,
 ) -> None:
 
     # get the background map
@@ -114,12 +126,21 @@ def plot_geolocations(
     fig, ax = plt.subplots(figsize=(10, 10))
 
     # add background world map
-    world_df.plot(ax=ax, color="gray")
+    world_df.plot(ax=ax, color="gray", zorder=2)
 
     # add the locations of the dataset
-    gpd_df.plot(ax=ax, color=color, markersize=2)
+    for igpd_df, icolor in zip(gpd_dfs, colors):
+        igpd_df.plot(ax=ax, color=icolor, markersize=3, zorder=3)
+
+    ax.grid(zorder=0)
+    plt.tight_layout()
 
     if save_name is not None:
-        fig.savefig(SAVE_PATH + f"geo_{save_name}.png")
+        fig.savefig(SAVE_PATH + f"geo_{save_name}.png", dpi=200, transparent=True)
     else:
         plt.show()
+
+    if return_plot:
+        return fig, ax
+    else:
+        return None
