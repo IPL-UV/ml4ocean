@@ -6,7 +6,10 @@ import numpy as np
 
 
 def transform_all(
-    dfs: List[pd.DataFrame], pca_model: Optional[List[pd.DataFrame]]=None, n_components: int = 10, random_state: int = 123
+    dfs: List[pd.DataFrame],
+    pca_model: Optional[List[pd.DataFrame]] = None,
+    n_components: int = 10,
+    random_state: int = 123,
 ) -> Tuple[pd.DataFrame, BaseEstimator]:
     """Applies a PCA transform on all of the variables
     concatenated."""
@@ -18,10 +21,17 @@ def transform_all(
 
         # fit PCA model
         X = pca_model.fit_transform(X)
+
+        # meta data
+        columns = [f"pc_{icomponent}" for icomponent in range(n_components)]
+        X = pd.DataFrame(X, columns=columns)
+        pca_model.columns = columns
+
         return X, pca_model
     else:
         X = pca_model.transform(X)
-
+        if hasattr(pca_model, "columns"):
+            X = pd.DataFrame(X, columns=pca_model.columns)
         return X
 
 
@@ -29,7 +39,8 @@ def transform_individual(
     dfs: List[pd.DataFrame],
     n_components: int = 10,
     random_state: int = 123,
-    **kwargs: Tuple[int, str, bool, float]
+    columns: Optional[List[str]] = None,
+    **kwargs: Tuple[int, str, bool, float],
 ) -> Tuple[pd.DataFrame, BaseEstimator]:
     """Applies a PCA transform on the list of dataframes concatenated.
     
@@ -41,6 +52,9 @@ def transform_individual(
     random_state: int, default=123
         the random state for the PCA transformations
 
+    columns : List[str]
+        the suffix added to the column names
+
     kwargs: Tuple[int, str, bool, float]
         some kwargs for the PCA transformation
 
@@ -51,7 +65,8 @@ def transform_individual(
     
 
     """
-
+    # # get column names
+    # columns = [df.columns for df in dfs]
     # perform PCA transformation
     pca_models = [
         PCA(n_components=n_components, random_state=random_state, **kwargs)
@@ -59,5 +74,12 @@ def transform_individual(
 
     # fit PCA model
     dfs = [pca_model.fit_transform(df) for df, pca_model in zip(dfs, pca_models)]
+
+    # add metadata
+    if columns is not None:
+        dfs = [
+            idf.add_suffix(f"{iname}_pc{pc_comp+1}")
+            for pc_comp, (idf, iname) in enumerate(zip(dfs, columns))
+        ]
 
     return dfs, pca_models
