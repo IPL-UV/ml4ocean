@@ -10,7 +10,18 @@ SAVE_PATH = "/media/disk/erc/papers/2019_ML_OCN/ml4ocean/reports/figures/"
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-plt.style.use("seaborn-poster")
+plt.style.use("seaborn-talk")
+
+
+def get_depth_labels():
+
+    depths = 276
+    first = [*range(0, 250)]
+    d1 = first[::2]
+
+    second = [*range(250, 1001)]
+    d2 = second[::5]
+    return -np.concatenate((d1, d2))
 
 
 def plot_mo_stats(
@@ -31,10 +42,11 @@ def plot_mo_stats(
 
     else:
         raise ValueError(f"Unrecognized stat: {stat}")
+    df["depths"] = get_depth_labels()
 
-    df.plot(y=stat.lower(), ax=ax, linewidth=10, color=color)
+    df.plot(y="depths", x=stat.lower(), ax=ax, linewidth=6, color=color)
     if stat.lower() == "r2":
-        ax.set_ylim([0, 1])
+        ax.set_xlim([0, 1])
 
     ax.set_xlabel("")
     ax.set_ylabel("")
