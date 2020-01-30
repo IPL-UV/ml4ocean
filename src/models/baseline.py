@@ -40,12 +40,15 @@ def train_gp_model(
 ) -> BaseEstimator:
 
     # define kernel function
-    kernel = ConstantKernel() * Matern(nu=2.5) + WhiteKernel()
+    kernel = (
+        ConstantKernel() * Matern(nu=2.5, length_scale=np.ones(xtrain.shape[1]))
+        + WhiteKernel()
+    )
 
     # define GP model
     gp_model = GaussianProcessRegressor(
         kernel=kernel,  # kernel function (very important)
-        normalize_y=False,  # good standard practice --> unless we have normalized before?
+        normalize_y=True,  # good standard practice --> unless we have normalized before?
         random_state=123,  # reproducibility
         n_restarts_optimizer=0,  # good practice (avoids local minima)
     )
@@ -91,8 +94,8 @@ def train_glm_model(
         cv=3,
         random_state=123,
         n_jobs=-1,
-        normalize=True,
-        selection="cyclic",
+        normalize=False,
+        selection="random",
         verbose=verbose,
     )
 
@@ -105,11 +108,11 @@ def train_glm_model(
     return gl_model
 
 
-def train_mlp_model(xtrain, ytrain, verbose=0):
+def train_mlp_model(xtrain, ytrain, verbose=0, valid=0.2, tol=1e-5):
 
     # Initialize MLP
     mlp_model = MLPRegressor(
-        hidden_layer_sizes=(100, 100),
+        hidden_layer_sizes=(128, 128, 128),
         activation="relu",
         solver="adam",
         batch_size=100,
@@ -118,7 +121,8 @@ def train_mlp_model(xtrain, ytrain, verbose=0):
         random_state=123,
         early_stopping=False,
         verbose=verbose,
-        validation_fraction=0.2,
+        validation_fraction=valid,
+        tol=tol,
     )
 
     # train GLM
@@ -159,8 +163,8 @@ def train_rf_model(
     """
     # initialize baseline RF model
     rf_model = RandomForestRegressor(
-        n_estimators=100,
-        criterion="mae",
+        n_estimators=1_000,
+        criterion="mse",
         n_jobs=n_jobs,
         random_state=123,
         warm_start=False,

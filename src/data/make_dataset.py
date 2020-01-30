@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import numpy as np
 from typing import Tuple, Optional, List
+from visualization.visualize import get_depth_labels
 
 DATA_PATH = "/home/emmanuel/projects/2020_ml_ocn/data/RAW/CONTROL/"
 region1 = "NORTH_ATLANTIC"
@@ -39,8 +41,42 @@ class DataLoader:
         self.valid_floats = {"na": [6901486, 3902123], "stg": [6901472, 3902121]}
 
         self.core_outputs = ["sla"]
-        self.loc_vars = ["lat", "lon", "doy"]
+        self.loc_vars = ["lat", "lon"]
+        self.time_vars = ["doy"]
         self.meta_vars = ["wmo", "n_cycle"]
+
+    def load_columns(self, region: str = "na"):
+
+        columns = {}
+
+        # load high dimensional datasets
+        columns["temperature"] = (
+            self.load_temperature(region, drop_meta=True, training=True)
+            .add_prefix("temp_")
+            .columns.values
+        )
+        columns["density"] = (
+            self.load_density(region, drop_meta=True, training=True)
+            .add_prefix("dens_")
+            .columns.values
+        )
+        columns["salinity"] = (
+            self.load_salinity(region, drop_meta=True, training=True)
+            .add_prefix("sal_")
+            .columns.values
+        )
+        columns["spicy"] = (
+            self.load_spicy(region, drop_meta=True, training=True)
+            .add_prefix("spice_")
+            .columns.values
+        )
+        columns["core"] = self.core_vars
+        columns["time"] = self.time_vars
+        columns["location"] = self.loc_vars
+        columns["argo_float"] = ["wmo"]
+        columns["argo_time"] = ["n_cycle"]
+
+        return columns
 
     def load_data(
         self, region: str = "na", drop_meta: bool = False, training: bool = True
@@ -159,6 +195,8 @@ class DataLoader:
             header=None,
         )
         X = X.rename(columns={0: "wmo", 1: "n_cycle"})
+
+        # ren
 
         # extract training/validation dataset
         X_tr, X_val = self.extract_valid(
@@ -346,3 +384,135 @@ def load_labels(region="NA", training: bool = True):
         drop_meta = False
 
     return dataloader.load_ouputs(region=region, training=training, drop_meta=drop_meta)
+
+
+class ValidationFloats:
+    def __init__(self, region: str = "na"):
+        self.region = region
+        self.valid_floats = {"na": [6901486, 3902123], "stg": [6901472, 3902121]}
+        self.meta_vars = ["wmo", "n_cycle"]
+        self.depths = get_depth_labels()
+
+    def get_validation_floats(self, region: str = "na"):
+        return self.valid_floats[region]
+
+    def _load_labels(self, region: Optional[str] = "na"):
+
+        # get region
+        if region is None:
+            region = self.region
+
+        # Load labels
+        y = load_labels(region, training=False)
+
+        # get meta columns
+        self.meta_columns = y[self.meta_vars]
+
+        columns = y.columns
+        columns = y.columns
+
+        # check that columns match depths
+        assert len(columns[2:]) == len(self.depths)
+
+        # get columns
+        self.columns = np.concatenate((columns[:2].values, self.depths))
+        return y
+
+    def get_validation_res(
+        self, ytest: np.ndarray, ypred: np.ndarray, float_num: int = 1
+    ):
+        # get columns and meta Variables
+        self._load_labels(self.region)
+
+        # create numpy array with metadata columns
+        print(self.meta_columns.values.shape, ypred.shape)
+        ypred = np.concatenate((self.meta_columns.values, ypred), axis=1)
+        ytest = np.concatenate((self.meta_columns.values, ytest), axis=1)
+
+        # create dataframe
+        ypred = pd.DataFrame(ypred, columns=self.columns)
+        ytest = pd.DataFrame(ytest, columns=self.columns)
+
+        # get validation valid_floats
+        validation_float = self.valid_floats[self.region][float_num]
+
+        # extract data with floats
+        ypred = ypred[ypred["wmo"] == validation_float]
+        ytest = ytest[ytest["wmo"] == validation_float]
+
+        # drop float name columns
+        ypred = ypred.drop(["wmo"], axis=1)
+        ytest = ytest.drop(["wmo"], axis=1)
+
+        # create time series
+        ypred = pd.melt(
+            ypred, id_vars=["n_cycle"], var_name="Depth", value_name="Predictions"
+        )
+        ytest = pd.melt(ytest, id_vars=["n_cycle"], var_name="Depth", value_name="Test")
+
+        # merge into time series with depths
+        y = pd.merge(ypred, ytest)
+
+        return y
+
+
+def get_data(params):
+
+    # -------------------------------
+    # Core params
+    # -------------------------------
+
+    # load training data
+    X_core = load_standard_data(params.region, training=True)
+
+    # Testing Data
+    X_core_te = load_standard_data(params.region, training=False)
+    X_core_te = X_core_te.iloc[:, 2:]
+
+    # ----------------------------------
+    # High Dimensional params
+    # ----------------------------------
+    X_temp, X_dens, X_sal, X_spicy = load_high_dim_data(params.region, training=True)
+
+    # add prefix (Training/Validation)
+    X_temp = X_temp.add_prefix("temp_")
+    X_dens = X_dens.add_prefix("dens_")
+    X_sal = X_sal.add_prefix("sal_")
+    X_spicy = X_spicy.add_prefix("spice_")
+
+    #
+    X_temp_te, X_dens_te, X_sal_te, X_spicy_te = load_high_dim_data(
+        params.region, training=False
+    )
+
+    # Subset
+    X_temp_te = X_temp_te.iloc[:, 2:]
+    X_dens_te = X_dens_te.iloc[:, 2:]
+    X_sal_te = X_sal_te.iloc[:, 2:]
+    X_spicy_te = X_spicy_te.iloc[:, 2:]
+
+    # add prefix (Test)
+    X_temp_te = X_temp_te.add_prefix("temp_")
+    X_dens_te = X_dens_te.add_prefix("dens_")
+    X_sal_te = X_sal_te.add_prefix("sal_")
+    X_spicy_te = X_spicy_te.add_prefix("spice_")
+
+    # --------------------------------------------
+    # Load Labels
+    # --------------------------------------------
+    ytr = load_labels(params.region, training=True)
+
+    yte = load_labels(params.region, training=False)
+
+    yte = yte.iloc[:, 2:]
+
+    # Concatenate Data
+    # Training Data
+    Xtr = pd.concat([X_core, X_temp, X_dens, X_sal, X_spicy], axis=1)
+
+    # Testing Data
+    Xte = pd.concat([X_core_te, X_temp_te, X_dens_te, X_sal_te, X_spicy_te], axis=1)
+
+    dataset = {"Xtrain": Xtr, "Xtest": Xte, "ytrain": ytr, "ytest": yte}
+    return dataset
+

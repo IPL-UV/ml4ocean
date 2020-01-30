@@ -13,6 +13,11 @@ import seaborn as sns
 plt.style.use("seaborn-talk")
 
 
+class PlotResults:
+    def __init__(self):
+        pass
+
+
 def get_depth_labels():
 
     depths = 276

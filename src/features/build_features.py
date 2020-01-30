@@ -4,6 +4,26 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point, Polygon
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+# Datasets
+from data.make_dataset import (
+    DataLoader,
+    load_standard_data,
+    load_high_dim_data,
+    load_labels,
+)
+
+
+class ProcessParams:
+    n_components = 5
+    valid_split = 0.2
+    standardize = "before"
+    seed = 123
+    bootstrap_seed = 123
 
 
 class CycleTransform(BaseEstimator, TransformerMixin):
@@ -264,3 +284,152 @@ def times_2_cycles(df: pd.DataFrame, time_types: List[str] = ["doy"]) -> pd.Data
     # drop original column
 
     return df
+
+
+def run_input_preprocess(params, dataset):
+
+    # get columns
+    dataloader = DataLoader()
+
+    columns = dataloader.load_columns()
+
+    new_columns = [
+        *["doy_cos", "doy_sin"],
+        *["x", "y", "z"],
+        *[f"temperature_pc{icomponent+1}" for icomponent in range(params.n_components)],
+        *[f"density_pc{icomponent+1}" for icomponent in range(params.n_components)],
+        *[f"salinity_pc{icomponent+1}" for icomponent in range(params.n_components)],
+        *[f"spicy_pc{icomponent+1}" for icomponent in range(params.n_components)],
+        *columns["core"],
+    ]
+    # print(columns["temperature"])
+    # define transfomer
+    if params.input_std == "before":
+        X_pre_transformer = ColumnTransformer(
+            [
+                ("time", CycleTransform(columns["time"]), columns["time"]),
+                ("location", GeoCartTransform(), columns["location"]),
+                (
+                    "temperature",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["temperature"],
+                ),
+                (
+                    "density",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["density"],
+                ),
+                (
+                    "salinity",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["salinity"],
+                ),
+                (
+                    "spicy",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["spicy"],
+                ),
+                (
+                    "core",
+                    StandardScaler(with_mean=True, with_std=True),
+                    columns["core"],
+                ),
+            ],
+            remainder="passthrough",
+        )
+    elif params.input_std == "after":
+        X_pre_transformer = ColumnTransformer(
+            [
+                ("time", CycleTransform(columns["time"]), columns["time"]),
+                ("location", GeoCartTransform(), columns["location"]),
+                (
+                    "temperature",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["temperature"],
+                ),
+                (
+                    "density",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["density"],
+                ),
+                (
+                    "salinity",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["salinity"],
+                ),
+                (
+                    "spicy",
+                    PCA(n_components=params.n_components, random_state=params.pca_seed),
+                    columns["spicy"],
+                ),
+            ],
+            remainder="passthrough",
+        )
+    else:
+        raise ValueError(f"Unrecognized standardize param: {params.standardize}")
+
+    # transform data
+    t = X_pre_transformer.fit_transform(dataset["Xtrain"])
+    dataset["Xtrain"] = X_pre_transformer.fit_transform(dataset["Xtrain"])
+    dataset["Xtest"] = X_pre_transformer.transform(dataset["Xtest"])
+    dataset["input_pre_trans"] = X_pre_transformer
+    dataset["new_columns"] = new_columns
+    return dataset
+
+
+def run_input_postprocess(params, dataset):
+
+    # initialize transfomer
+
+    X_post_transformer = StandardScaler(with_mean=True, with_std=True)
+
+    # data
+
+    dataset["Xtrain"] = X_post_transformer.fit_transform(dataset["Xtrain"])
+    dataset["Xtest"] = X_post_transformer.transform(dataset["Xtest"])
+    dataset["Xvalid"] = X_post_transformer.transform(dataset["Xvalid"])
+    dataset["input_post_trans"] = X_post_transformer
+    return dataset
+
+
+def run_output_preprocess(params, dataset):
+
+    data = {}
+    dataset["ytrain"] = np.log(dataset["ytrain"])
+    dataset["ytest"] = np.log(dataset["ytest"])
+    dataset["out_pre_trans"] = np.log
+    return dataset
+
+
+def run_output_postprocess(params, dataset):
+
+    output_transformer = StandardScaler(with_mean=True, with_std=True)
+    columns = dataset["ytrain"].columns
+
+    dataset["ytrain"] = pd.DataFrame(
+        output_transformer.fit_transform(dataset["ytrain"]), columns=columns
+    )
+    dataset["ytest"] = pd.DataFrame(
+        output_transformer.fit_transform(dataset["ytest"]), columns=columns
+    )
+    dataset["yvalid"] = pd.DataFrame(
+        output_transformer.fit_transform(dataset["yvalid"]), columns=columns
+    )
+    dataset["out_post_trans"] = output_transformer
+
+    return dataset
+
+
+def run_split(params, dataset):
+    Xtrain, Xvalid, ytrain, yvalid = train_test_split(
+        dataset["Xtrain"],
+        dataset["ytrain"],
+        train_size=1 - params.valid_split,
+        random_state=params.bootstrap_seed,
+    )
+
+    dataset["Xtrain"] = Xtrain
+    dataset["Xvalid"] = Xvalid
+    dataset["ytrain"] = ytrain
+    dataset["yvalid"] = yvalid
+    return dataset
