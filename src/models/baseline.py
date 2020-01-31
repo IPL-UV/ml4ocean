@@ -1,11 +1,12 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import WhiteKernel, ConstantKernel, RBF, Matern
-from sklearn.linear_model import MultiTaskElasticNetCV, LinearRegression
+from sklearn.linear_model import MultiTaskElasticNetCV, LinearRegression, RidgeCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.base import BaseEstimator
 from typing import Optional, Dict, Union, Tuple
+from sklearn.ensemble import StackingRegressor
 import numpy as np
 import pandas as pd
 import time
@@ -13,6 +14,47 @@ import time
 import warnings
 
 warnings.filterwarnings("ignore")
+
+
+def train_stack_model(
+    xtrain: Union[np.ndarray, pd.DataFrame],
+    ytrain: Union[np.ndarray, pd.DataFrame],
+    verbose: int = 0,
+    n_jobs: int = 1,
+    order: Tuple[str, str] = ("rf", "lr"),
+) -> BaseEstimator:
+
+    rf_estimator = RandomForestRegressor(
+        n_estimators=1_000,
+        criterion="mse",
+        n_jobs=n_jobs,
+        random_state=123,
+        warm_start=False,
+        verbose=verbose,
+    )
+    lr_estimator = LinearRegression()
+
+    # Initialize GLM
+    if order == ("rf", "lr"):
+        stacking_regressor = StackingRegressor(
+            estimators=[("Random Forest", rf_estimator)], final_estimator=lr_estimator
+        )
+    elif order == ("lr", "rf"):
+        stacking_regressor = StackingRegressor(
+            estimators=[("Linear Regression", lr_estimator)],
+            final_estimator=rf_estimator,
+        )
+    else:
+        raise ValueError()
+
+    mo_regressor = MultiOutputRegressor(stacking_regressor, n_jobs=1)
+    # train GLM
+    t0 = time.time()
+    mo_regressor.fit(xtrain, ytrain)
+    t1 = time.time() - t0
+    if verbose > 0:
+        print(f"Training time: {t1:.3f} secs.")
+    return mo_regressor
 
 
 def train_lr_model(
@@ -61,6 +103,24 @@ def train_gp_model(
     if verbose > 0:
         print(f"Training time: {t1:.3f} secs.")
     return gp_model
+
+
+def train_ridge_lr_model(
+    xtrain: Union[np.ndarray, pd.DataFrame],
+    ytrain: Union[np.ndarray, pd.DataFrame],
+    verbose: int = 0,
+    n_jobs: int = 1,
+) -> BaseEstimator:
+    # Initialize GLM
+    lr_model = RidgeCV()
+
+    # train GLM
+    t0 = time.time()
+    lr_model.fit(xtrain, ytrain)
+    t1 = time.time() - t0
+    if verbose > 0:
+        print(f"Training time: {t1:.3f} secs.")
+    return lr_model
 
 
 def train_glm_model(
