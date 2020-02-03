@@ -3,6 +3,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import WhiteKernel, ConstantKernel, RBF, Matern
 from sklearn.linear_model import MultiTaskElasticNetCV, LinearRegression, RidgeCV
 from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.base import BaseEstimator
 from typing import Optional, Dict, Union, Tuple
@@ -241,6 +242,35 @@ def train_rf_model(
 
 
 def train_mo_rf_model(
+    xtrain: Union[np.ndarray, pd.DataFrame],
+    ytrain: Union[np.ndarray, pd.DataFrame],
+    verbose: int = 0,
+    n_jobs: int = 8,
+    mo_jobs: int = 8,
+) -> BaseEstimator:
+    # initialize baseline RF model
+    rf_model = RandomForestRegressor(
+        n_estimators=1_000,
+        criterion="mae",
+        n_jobs=n_jobs,
+        random_state=123,
+        warm_start=False,
+        verbose=verbose,
+    )
+
+    # initialize multioutput regressor
+    mo_model = MultiOutputRegressor(estimator=rf_model, n_jobs=mo_jobs)
+    # train RF model
+    t0 = time.time()
+    mo_model.fit(xtrain, ytrain)
+    t1 = time.time() - t0
+
+    if verbose > 0:
+        print(f"Training time: {t1:.3f} secs.")
+    return mo_model
+
+
+def train_mo_gbt_model(
     xtrain: Union[np.ndarray, pd.DataFrame],
     ytrain: Union[np.ndarray, pd.DataFrame],
     verbose: int = 0,

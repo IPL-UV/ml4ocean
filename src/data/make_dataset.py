@@ -419,7 +419,11 @@ class ValidationFloats:
         return y
 
     def get_validation_res(
-        self, ytest: np.ndarray, ypred: np.ndarray, float_num: int = 1
+        self,
+        ytest: np.ndarray,
+        ypred: np.ndarray,
+        validation_float: Optional[int] = None,
+        float_num: int = 1,
     ):
         # get columns and meta Variables
         self._load_labels(self.region)
@@ -434,7 +438,8 @@ class ValidationFloats:
         ytest = pd.DataFrame(ytest, columns=self.columns)
 
         # get validation valid_floats
-        validation_float = self.valid_floats[self.region][float_num]
+        if validation_float is None:
+            validation_float = self.valid_floats[self.region][float_num]
 
         # extract data with floats
         ypred = ypred[ypred["wmo"] == validation_float]
@@ -448,7 +453,9 @@ class ValidationFloats:
         ypred = pd.melt(
             ypred, id_vars=["n_cycle"], var_name="Depth", value_name="Predictions"
         )
-        ytest = pd.melt(ytest, id_vars=["n_cycle"], var_name="Depth", value_name="Test")
+        ytest = pd.melt(
+            ytest, id_vars=["n_cycle"], var_name="Depth", value_name="Labels"
+        )
 
         # merge into time series with depths
         y = pd.merge(ypred, ytest)

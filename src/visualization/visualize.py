@@ -6,6 +6,7 @@ import matplotlib.colors as colors
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 SAVE_PATH = "/media/disk/erc/papers/2019_ML_OCN/ml4ocean/reports/figures/"
+SAVE_PATH = "/home/emmanuel/figures/ml4ocn/"
 # plotting
 import matplotlib.pyplot as plt
 import seaborn as sns
