@@ -432,7 +432,7 @@ class ValidationFloats:
         print(self.meta_columns.values.shape, ypred.shape)
         ypred = np.concatenate((self.meta_columns.values, ypred), axis=1)
         ytest = np.concatenate((self.meta_columns.values, ytest), axis=1)
-
+        print(ypred.min(), ypred.max(), ytest.min(), ytest.max())
         # create dataframe
         ypred = pd.DataFrame(ypred, columns=self.columns)
         ytest = pd.DataFrame(ytest, columns=self.columns)

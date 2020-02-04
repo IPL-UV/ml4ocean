@@ -8,6 +8,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.pipeline import Pipeline
 
 # Datasets
 from data.make_dataset import (
@@ -394,28 +396,38 @@ def run_input_postprocess(params, dataset):
 
 def run_output_preprocess(params, dataset):
 
-    data = {}
-    dataset["ytrain"] = np.log(dataset["ytrain"])
-    dataset["ytest"] = np.log(dataset["ytest"])
-    dataset["out_pre_trans"] = np.log
+    # data = {}
+    # dataset["ytrain"] = np.log(dataset["ytrain"])
+    # dataset["ytest"] = np.log(dataset["ytest"])
+    # dataset["out_pre_trans"] = np.log
     return dataset
 
 
 def run_output_postprocess(params, dataset):
 
-    output_transformer = StandardScaler(with_mean=True, with_std=True)
+    if params.std_ouputs == True:
+        dataset["out_post_trans"] = Pipeline(
+            [
+                ("log", FunctionTransformer(func=np.log10, inverse_func=np.exp)),
+                ("scale", StandardScaler()),
+            ]
+        )
+    elif params.std_ouputs == False:
+        dataset["out_post_trans"] = Pipeline([("scale", StandardScaler())])
+    else:
+        raise ValueError(f"Unrecognized params.std_ouputs: {params.std_ouputs}")
+
     columns = dataset["ytrain"].columns
 
     dataset["ytrain"] = pd.DataFrame(
-        output_transformer.fit_transform(dataset["ytrain"]), columns=columns
+        dataset["out_post_trans"].fit_transform(dataset["ytrain"]), columns=columns
     )
     dataset["ytest"] = pd.DataFrame(
-        output_transformer.fit_transform(dataset["ytest"]), columns=columns
+        dataset["out_post_trans"].transform(dataset["ytest"]), columns=columns
     )
     dataset["yvalid"] = pd.DataFrame(
-        output_transformer.fit_transform(dataset["yvalid"]), columns=columns
+        dataset["out_post_trans"].transform(dataset["yvalid"]), columns=columns
     )
-    dataset["out_post_trans"] = output_transformer
 
     return dataset
 
