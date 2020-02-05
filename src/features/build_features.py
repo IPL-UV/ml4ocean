@@ -406,9 +406,12 @@ def run_output_preprocess(params, dataset):
 def run_output_postprocess(params, dataset):
 
     if params.std_ouputs == True:
+        
+        def loginv(x):
+            return 10 ** x
         dataset["out_post_trans"] = Pipeline(
             [
-                ("log", FunctionTransformer(func=np.log10, inverse_func=np.exp)),
+                ("log", FunctionTransformer(func=np.log10, inverse_func=loginv)),
                 ("scale", StandardScaler()),
             ]
         )
