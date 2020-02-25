@@ -1,6 +1,6 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import WhiteKernel, ConstantKernel, RBF, Matern
+from sklearn.gaussian_process.kernels import (WhiteKernel, ConstantKernel, RBF, Matern, ExpSineSquared, RationalQuadratic)
 from sklearn.linear_model import MultiTaskElasticNetCV, LinearRegression, RidgeCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import GradientBoostingRegressor
@@ -23,6 +23,8 @@ def train_stack_model(
     verbose: int = 0,
     n_jobs: int = 1,
     order: Tuple[str, str] = ("rf", "lr"),
+    lr_params: Optional[Dict]=None,
+    rf_params: Optional[Dict]=None
 ) -> BaseEstimator:
 
     rf_estimator = RandomForestRegressor(
@@ -79,21 +81,22 @@ def train_lr_model(
 def train_gp_model(
     xtrain: Union[np.ndarray, pd.DataFrame],
     ytrain: Union[np.ndarray, pd.DataFrame],
-    verbose: int = 0,
+    params,
 ) -> BaseEstimator:
 
     # define kernel function
+    init_length_scale = np.ones(xtrain.shape[1])
     kernel = (
-        ConstantKernel() * Matern(nu=2.5, length_scale=np.ones(xtrain.shape[1]))
-        + WhiteKernel()
+        ConstantKernel() * Matern(nu=2.5, length_scale=init_length_scale)
+        + ConstantKernel() * RationalQuadratic(alpha=10, length_scale=1.0)
+        + ConstantKernel() * RBF(length_scale=init_length_scale)
+        + WhiteKernel(noise_level=0.01)
     )
 
     # define GP model
     gp_model = GaussianProcessRegressor(
-        kernel=kernel,  # kernel function (very important)
-        normalize_y=True,  # good standard practice --> unless we have normalized before?
-        random_state=123,  # reproducibility
-        n_restarts_optimizer=0,  # good practice (avoids local minima)
+        kernel=kernel,
+        **params
     )
 
     # train GP Model
@@ -101,7 +104,7 @@ def train_gp_model(
     gp_model.fit(xtrain, ytrain)
     t1 = time.time() - t0
 
-    if verbose > 0:
+    if params['verbose'] > 0:
         print(f"Training time: {t1:.3f} secs.")
     return gp_model
 
@@ -169,28 +172,18 @@ def train_glm_model(
     return gl_model
 
 
-def train_mlp_model(xtrain, ytrain, verbose=0, valid=0.2, tol=1e-5):
+def train_mlp_model(xtrain, ytrain, params):
 
     # Initialize MLP
     mlp_model = MLPRegressor(
-        hidden_layer_sizes=(128, 128, 128),
-        activation="relu",
-        solver="adam",
-        batch_size=100,
-        learning_rate="adaptive",
-        max_iter=1_000,
-        random_state=123,
-        early_stopping=False,
-        verbose=verbose,
-        validation_fraction=valid,
-        tol=tol,
+        **params
     )
 
     # train GLM
     t0 = time.time()
     mlp_model.fit(xtrain, ytrain)
     t1 = time.time() - t0
-    if verbose > 0:
+    if params['verbose'] > 0:
         print(f"Training time: {t1:.3f} secs.")
     return mlp_model
 
@@ -198,9 +191,7 @@ def train_mlp_model(xtrain, ytrain, verbose=0, valid=0.2, tol=1e-5):
 def train_rf_model(
     xtrain: Union[np.ndarray, pd.DataFrame],
     ytrain: Union[np.ndarray, pd.DataFrame],
-    verbose: int = 0,
-    n_jobs: int = 8,
-    **kwargs: Tuple[int, str, bool, float],
+    params
 ) -> BaseEstimator:
     """Train a basic Random Forest (RF) Regressor 
 
@@ -224,19 +215,14 @@ def train_rf_model(
     """
     # initialize baseline RF model
     rf_model = RandomForestRegressor(
-        n_estimators=1_000,
-        criterion="mse",
-        n_jobs=n_jobs,
-        random_state=123,
-        warm_start=False,
-        verbose=verbose,
+        **params
     )
     # train RF model
     t0 = time.time()
     rf_model.fit(xtrain, ytrain)
     t1 = time.time() - t0
 
-    if verbose > 0:
+    if params['verbose'] > 0:
         print(f"Training time: {t1:.3f} secs.")
     return rf_model
 
