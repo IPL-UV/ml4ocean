@@ -5,6 +5,10 @@ __pycache__/
 # C extensions
 *.so
 
+# saved models
+\models/
+*.joblib
+
 # Distribution / packaging
 .Python
 env/
