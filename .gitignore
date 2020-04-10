@@ -94,3 +94,6 @@ target/
 
 # Data
 *.csv
+
+# Figures
+*.png
