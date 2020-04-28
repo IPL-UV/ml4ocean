@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>src.models.gpy API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.models.gpy</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># &#34;&#34;&#34;Author: Juan Emmanuel Johnson
+# Implementations of GP algorithms from the GPy library. These are all wrapped as
+# scikit-learn estimators for convenience.&#34;&#34;&#34;
+# import GPy
+# import numpy as np
+# from sklearn.utils import check_random_state
+# from sklearn.utils.validation import check_X_y, check_array
+# from sklearn.base import BaseEstimator, RegressorMixin
+# from scipy.cluster.vq import kmeans2
+
+
+# class SGP(BaseEstimator, RegressorMixin):
+#     def __init__(
+#         self,
+#         kernel=None,
+#         n_inducing=10,
+#         random_state=123,
+#         max_iters=200,
+#         optimizer=&#34;scg&#34;,
+#         verbose=None,
+#     ):
+#         self.kernel = kernel
+#         self.n_inducing = n_inducing
+#         self.rng = np.random.RandomState(random_state)
+#         self.max_iters = max_iters
+#         self.optimizer = optimizer
+#         self.verbose = verbose
+
+#     def fit(self, X, y):
+#         X, y = check_X_y(X, y, multi_output=True, y_numeric=True)
+
+#         n_samples, d_dimensions = X.shape
+
+#         # default Kernel Function
+#         if self.kernel is None:
+#             self.kernel = GPy.kern.RBF(input_dim=d_dimensions, ARD=False)
+
+#         # Get inducing points
+#         z = self.rng.uniform(X.min(), X.max(), (self.n_inducing, d_dimensions))
+
+#         # GP Model
+#         gp_model = GPy.models.SparseGPRegression(X, y, kernel=self.kernel, Z=z)
+
+#         # FITC for inference
+#         gp_model.inference_method = GPy.inference.latent_function_inference.FITC()
+
+#         # Optimize
+#         # gp_model.inducing_inputs.fix()
+#         gp_model.optimize(
+#             self.optimizer, messages=self.verbose, max_iters=self.max_iters
+#         )
+
+#         self.gp_model = gp_model
+
+#         return self
+
+#     def display_model(self):
+#         return self.gp_model
+
+#     def predict(self, X, return_std=False, noiseless=True):
+
+#         if noiseless:
+#             mean, var = self.gp_model.predict_noiseless(X)
+#         else:
+#             mean, var = self.gp_model.predict(X)
+
+#         if return_std:
+#             return mean, np.sqrt(var)
+#         else:
+#             return mean
+
+
+# class SVGP(BaseEstimator, RegressorMixin):
+#     def __init__(
+#         self,
+#         x_variance=None,
+#         kernel=None,
+#         n_inducing=10,
+#         random_state=123,
+#         max_iters=200,
+#         optimizer=&#34;scg&#34;,
+#         verbose=None,
+#         n_restarts=0,
+#     ):
+#         self.kernel = kernel
+#         self.x_variance = x_variance
+#         self.n_inducing = int(n_inducing)
+#         self.random_state = random_state
+#         self.max_iters = max_iters
+#         self.optimizer = optimizer
+#         self.verbose = verbose
+#         self.n_restarts = n_restarts
+
+#     def fit(self, X, y):
+
+#         self.rng = np.random.RandomState(self.random_state)
+#         # print(X)
+#         if np.ndim(y) &lt; 2:
+#             y = y.reshape(-1, 1)
+#         n_samples, d_dimensions = X.shape
+
+#         self.X_train = X
+#         self.y_train = y
+
+#         # default Kernel Function
+#         if self.kernel is None:
+#             self.kernel = GPy.kern.RBF(input_dim=d_dimensions, ARD=False)
+
+#         # Convert covariance into matrix
+#         if self.x_variance is not None:
+#             assert self.x_variance.shape[1] == d_dimensions
+#             x_variance = np.array(self.x_variance).reshape(1, -1)
+#             x_variance = np.tile(x_variance, (n_samples, 1))
+#         else:
+#             x_variance = None
+
+#         # Get inducing points
+#         # print(self.n_inducing)
+#         z = kmeans2(X, self.n_inducing, minit=&#34;points&#34;)[0]
+
+#         # Kernel matrix
+#         gp_model = GPy.models.SparseGPRegression(
+#             X, y, kernel=self.kernel, Z=z, X_variance=x_variance
+#         )
+
+#         # Optimize
+#         if self.n_restarts &gt; 0:
+#             gp_model.optimize_restarts(
+#                 num_restarts=self.n_restarts, robust=True, verbose=self.verbose
+#             )
+#         else:
+#             gp_model.optimize(
+#                 self.optimizer, messages=self.verbose, max_iters=self.max_iters
+#             )
+#         self.gp_model = gp_model
+
+#         return self
+
+#     def display_model(self):
+#         return self.gp_model
+
+#     def predict(self, X, return_std=False, batch_size=1000):
+
+#         if X.shape[0] &gt; batch_size:
+#             mean, var = self.batch_predict(X, batch_size)
+#         else:
+#             mean, var = self.gp_model.predict_noiseless(X)
+
+#         if return_std:
+#             return mean.squeeze(), np.sqrt(var).squeeze()
+#         else:
+#             return mean.squeeze()
+
+#     def predict_y(self, X, return_std=False, batch_size=1000):
+
+#         mean, var = self.gp_model.predict(X)
+
+#         if return_std:
+#             return mean.squeeze(), np.sqrt(var).squeeze()
+#         else:
+#             return mean.squeeze()
+
+#     def batch_predict(self, Xs, batchsize=1000):
+#         ms, vs = [], []
+#         n = max(len(Xs) / batchsize, 1)  # predict in small batches
+#         for xs in np.array_split(Xs, n):
+#             m, v = self.gp_model.predict_noiseless(xs)
+
+#             ms.append(m)
+#             vs.append(v)
+
+#         return (
+#             np.concatenate(ms, 1),
+#             np.concatenate(vs, 1),
+#         )  # num_posterior_samples, N_test, D_y</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.models" href="index.html">src.models</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

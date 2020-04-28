@@ -1,0 +1,500 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Stochastic Variational GP
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+**Warning**: Need to use GPUs in order for this to work.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import sys
+
+# Add the path to the models
+sys.path.insert(0, '/media/disk/erc/papers/2019_ML_OCN/code/ml4ocean')
+from src.models.utils import MultiTaskGP
+from src.models.gpflow_gpu import SVGP, MOSVGP
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import time as time
+import numpy as np
+import gpflow
+import tensorflow as tf
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Make Fake Dataset
+X, y = make_regression(
+    n_samples=10000, 
+    n_features=10,    # Total Features
+    n_informative=3,   # Informative Features 
+    n_targets=10,
+    bias=10,
+    noise=0.8,
+    random_state=123
+
+)
+train_size = 3000
+
+# Training and Testing
+xtrain, xtest, ytrain, ytest = train_test_split(
+    X, y, train_size=train_size, random_state=123
+)
+
+xtrain.shape, ytrain.shape
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((3000, 10), (3000, 10))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import tensorflow as tf
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+gpflow.__version__
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;1.3.0&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+tf.__version__
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;1.13.1&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+tf.train
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;module &#39;tensorflow._api.v1.train&#39; from &#39;/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/tensorflow/_api/v1/train/__init__.py&#39;&gt;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### SVGP Algorithm
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Test Arguments to Ensure it works
+class TestArgs:
+    num_inducing = 100
+    iterations = 10
+    small_iterations = 10
+    adam_lr = 0.01
+    gamma = 0.1
+    minibatch_size = 100
+    initial_likelihood_var = 0.01
+    seed = 0
+
+# Better training arguments
+class Args:
+    num_inducing = 100
+    iterations = 10000
+    small_iterations = 1000
+    adam_lr = 0.01
+    gamma = 0.1
+    minibatch_size = 1000
+    initial_likelihood_var = 0.01
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Good practice
+gpflow.reset_default_graph_and_session()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Initialize Model
+gp_model = SVGP(
+    num_inducing=TestArgs.num_inducing,
+    iterations=TestArgs.iterations,
+    small_iterations=TestArgs.small_iterations,
+    adam_lr=TestArgs.adam_lr,
+    gamma=TestArgs.gamma,
+    minibatch_size=TestArgs.minibatch_size,
+    initial_likelihood_var=TestArgs.initial_likelihood_var,
+    seed=TestArgs.seed
+)
+
+# Fit Model to Data
+t0 = time.time()
+gp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+print(
+    f"Training Time: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>WARNING:tensorflow:From /usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>WARNING:tensorflow:From /usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>WARNING:tensorflow:From /usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>WARNING:tensorflow:From /usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training Time: 6.2 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Predict with test set
+t0 = time.time()
+ypred, ystd = gp_model.predict(xtest, return_std=True)
+t1 = time.time() - t0
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 14.907
+MSE: 513.619
+RMSE: 22.663
+R2: 0.954 
+Time: 0.308 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### MultiOutput
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Good practice
+gpflow.reset_default_graph_and_session()
+
+# Initialize Model
+mogp_model = MOSVGP(
+    num_inducing=TestArgs.num_inducing,
+    iterations=TestArgs.iterations,
+    small_iterations=TestArgs.small_iterations,
+    adam_lr=TestArgs.adam_lr,
+    gamma=TestArgs.gamma,
+    minibatch_size=TestArgs.minibatch_size,
+    initial_likelihood_var=TestArgs.initial_likelihood_var,
+    seed=TestArgs.seed
+)
+
+# Fit Model to Data
+t0 = time.time()
+mogp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+print(
+    f"Training Time: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training Time: 27.0 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Predict with test set
+t0 = time.time()
+ypred, ystd = mogp_model.predict(xtest, return_std=True)
+t1 = time.time() - t0
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 14.969
+MSE: 514.029
+RMSE: 22.672
+R2: 0.954 
+Time: 1.93 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+
+

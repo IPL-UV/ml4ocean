@@ -1,0 +1,406 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Demo I.I - Loading the Data (Refactored)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### **Important** - Paths and Directories
+
+This is annoying but it needs to be defined otherwise things get confusing. We need a few important paths to be pre-defined:
+
+| Name | Variable | Purpose |
+| ---| --- | --- |
+| Project | `PROJECT_PATH` | top level directory for the project (assuming megatron) |
+| Code |  `CODE_PATH` | folder of any dedicated functions that we use |
+| Raw Data | `RAW_PATH` | where the raw data is. Ideally, we **never** touch this ever except to read. |
+| Processed Data | `DATA_PATH` | where the processed data is stored |
+| Interim Data | `INTERIM_PATH` | where we save the training, validation and testing data |
+| Saved Models | `MODEL_PATH` | where we save any trained models |
+| Results Data | `RESULTS_PATH` | where we save any data results or outputs from ML models |
+| Figures | `FIG_PATH` | where we store any plotted figures during any part of our ML pipeline|
+
+This cell checks to see if all of the paths exist. If there is a path missing, it probably means you're not in megatron. If that's the case...well, we'll cross that bridge when we get there.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import pathlib
+import sys
+
+# define the top level directory
+PROJECT_PATH = pathlib.Path("/media/disk/erc/papers/2019_ML_OCN/")
+CODE_PATH = PROJECT_PATH.joinpath("ml4ocean")
+sys.path.append(str(CODE_PATH))
+
+# ml4ocean packages
+from src.utils import get_paths
+from src.data.world import get_full_data, world_features
+from src.features.world import subset_independent_floats
+
+PATHS = get_paths()
+
+# standard pacakges
+import numpy as np
+import pandas as pd
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## 1. Load Processed Global Data
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+from src.data.world import get_input_data, get_meta_data
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+t = get_meta_data()
+t.dtypes
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>wmo          int64
+n_cycle      int64
+N            int64
+lon        float64
+lat        float64
+juld       float64
+date        object
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+t = get_input_data()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+t.dtypes
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>N               int64
+wmo             int64
+n_cycle         int64
+sla           float64
+PAR           float64
+RHO_WN_412    float64
+RHO_WN_443    float64
+RHO_WN_490    float64
+RHO_WN_555    float64
+RHO_WN_670    float64
+doy_sin       float64
+doy_cos       float64
+x_cart        float64
+y_cart        float64
+z_cart        float64
+PC1           float64
+PC2           float64
+PC3           float64
+PC4           float64
+PC5           float64
+PC6           float64
+PC7           float64
+PC1.1         float64
+PC2.1         float64
+PC3.1         float64
+PC1.2         float64
+PC2.2         float64
+PC3.2         float64
+PC4.1         float64
+bbp           float64
+bbp.1         float64
+bbp.2         float64
+bbp.3         float64
+bbp.4         float64
+bbp.5         float64
+bbp.6         float64
+bbp.7         float64
+bbp.8         float64
+bbp.9         float64
+bbp.10        float64
+bbp.11        float64
+bbp.12        float64
+bbp.13        float64
+bbp.14        float64
+bbp.15        float64
+bbp.16        float64
+bbp.17        float64
+bbp.18        float64
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+full_df = get_full_data()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## 2 - Training and Test Split
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 2.1 - Independent Set I (SOCA2016)
+
+This independent set has a set number of independent floats which are not counted in the training or validation phase. These floats were in a paper (Sauzede et. al., 2016) and used during the testing phase to showcase how well the models did.
+
+* 6901472
+* 6901493
+* 6901523
+* 6901496
+
+So we need to take these away from the data.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+_, soca2016_df = subset_independent_floats(full_df, 'soca2016')
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 2.2 - Indpendent Set II (ISPRS2020)
+
+This independent set was a set of floats taken from the ISPRS paper (Sauzede et. al., 2020 (pending...)). These floats were used as the independent testing set to showcase the performance of the ML methods.
+
+* 6901486 (North Atlantic?)
+* 3902121 (Subtropical Gyre?)
+
+So we need to take these away from the data.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+_, isprs2020_df = subset_independent_floats(full_df, 'isprs2020')
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 2.3 - ML Data
+
+Now we want to subset the input data to be used for the ML models. Basically, we can subset all datasets that **are not** in the independent floats. In addition, we want all of the variables in the input features that we provided earlier.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# subset non-independent flows
+dataset = 'both'
+ml_df, _ = subset_independent_floats(full_df, 'both')
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 2.4 - Inputs, Outputs
+
+Lastly, we need to split the data into training, validation (and possibly testing). Recall that all the inputs are already written above and the outputs as well.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+input_df = ml_df[world_features.input]
+output_df = ml_df[world_features.output]
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## 3. Final Dataset (saving)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 3.1 - Print out data dimensions (w. metadata)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+print("Input Data:", input_df.shape)
+print("Output Data:", output_df.shape)
+print("SOCA2016 Independent Data:", soca2016_df[world_features.input].shape, soca2016_df[world_features.output].shape)
+print("ISPRS2016 Independent Data:", isprs2020_df[world_features.input].shape, isprs2020_df[world_features.output].shape)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Input Data: (24704, 26)
+Output Data: (24704, 19)
+SOCA2016 Independent Data: (378, 26) (378, 19)
+ISPRS2016 Independent Data: (331, 26) (331, 19)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### 3.2 - Saving
+
+* We're going to save the data in the `global/interim/` path. This is to prevent any overwrites. 
+* We also need to `index=True` for the savefile in order to preserve the metadata indices.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+so just by reducing the precision by a smidge (1e-14 instead of 1e-15), we find that the arrays are the same. So we can trust it.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+input_df.to_csv(f"{PATHS.data_interim.joinpath('inputs.csv')}", index=True)
+output_df.to_csv(f"{PATHS.data_interim.joinpath('outputs.csv')}", index=True)
+soca2016_df.to_csv(f"{PATHS.data_interim.joinpath('soca2016.csv')}", index=True)
+isprs2020_df.to_csv(f"{PATHS.data_interim.joinpath('isprs2020.csv')}", index=True)
+```
+
+</div>
+
+</div>
+
+

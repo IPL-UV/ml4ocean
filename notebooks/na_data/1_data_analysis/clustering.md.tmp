@@ -1,0 +1,747 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Cluster-Based Learning
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In this notebook, I will be looking at how we can use clustering methods to help us do regression. We will be looking at two approaches:
+1. Clustering of the data and then training a model per cluster
+2. Clustering only of the outputs and then training a model per cluster.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import KBinsDiscretizer
+from sklearn.utils import gen_even_slices
+import time as time
+import statsmodels.api as sm
+
+import sys
+sys.path.insert(0, '/home/emmanuel/projects/2020_ml_ocn/ml4ocean/src')
+from data.make_dataset import DataLoad
+
+
+%load_ext autoreload
+%autoreload 2
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+plt.style.use('ggplot')
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Data
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# data_path = '/media/disk/erc/papers/2019_ML_OCN/data/raph_temp_data_NA/'
+# data_path = '/Users/eman/Documents/data/ocean/⁩'
+
+# Import data
+dataloader = DataLoad()
+
+X, y = dataloader.load_control_data('na')
+
+X = X[dataloader.core_vars]
+y = y.drop(dataloader.meta_vars, axis=1)
+
+# y = np.exp(y)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+xtrain, xtest, ytrain, ytest = train_test_split(
+    X, y, train_size=0.8, random_state=123
+)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Standardize Data
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Standardize Inputs (per dimension)
+x_mean, x_std = xtrain.mean(axis=0), xtrain.std(axis=0)
+
+xtrain_norm = (xtrain - x_mean) / x_std
+xtest_norm = (xtest - x_mean) / x_std
+
+# Normalize Outputs
+y_mean = ytrain.mean(axis=0)
+
+ytrain_norm = ytrain - y_mean
+ytest_norm = ytest - y_mean
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Method I - Clustering the Inputs
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+clf = KMeans(init='k-means++', n_clusters=3, n_init=10, verbose=None)
+
+clf.fit(xtrain_norm)
+
+clusters = clf.predict(xtrain_norm)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# model 1
+for imodel in np.unique(clusters):
+    
+    print(f"Cluster: {imodel+1}")
+    # get subset of data which resides in cluster
+    ix = xtrain_norm[clusters == imodel]
+    iy = ytrain_norm[clusters == imodel]
+    
+#     print(ix.shape, iy.shape)
+    
+    # training and testing split
+    train_size = 0.8
+    random_state = 123
+
+    ixtrain, ixtest, iytrain, iytest = train_test_split(
+        ix, iy, train_size=train_size, random_state=random_state
+    )
+    
+    
+    # Standardize Inputs (per dimension)
+    x_mean, x_std = ixtrain.mean(axis=0), ixtrain.std(axis=0)
+
+    ixtrain_norm = (ixtrain - x_mean) / x_std
+    ixtest_norm = (ixtest - x_mean) / x_std
+
+    # Normalize Outputs
+    y_mean = iytrain.mean(axis=0)
+
+    iytrain_norm = iytrain - y_mean
+    iytest_norm = iytest - y_mean
+    
+    # =======================
+    # PCA
+    # =======================
+    n_components = 20
+
+    pca_model = PCA(n_components=n_components)
+
+    iytrain_red = pca_model.fit_transform(iytrain_norm)
+    iytest_red = pca_model.transform(iytest_norm)
+    
+    # =======================
+    # ML Algorithm
+    # =======================
+    rf_model = RandomForestRegressor(
+    n_estimators=1000, 
+    criterion='mse',
+    n_jobs=-1,
+    random_state=123,
+    warm_start=False,
+    verbose=0
+    )
+
+    t0 = time.time()
+    rf_model.fit(ixtrain_norm, iytrain_red)
+    t1 = time.time() - t0
+
+    print(
+        f"Training Time: {t1:.3f} seconds"
+    )
+    
+    # Predictions
+    t0 = time.time()
+    iypred_red = rf_model.predict(ixtest_norm)
+    t1 = time.time() - t0
+    iypred = pca_model.inverse_transform(iypred_red)
+
+
+    # Get Average Stats
+    mae = mean_absolute_error(iytest_norm, iypred, multioutput='uniform_average')
+    mse = mean_squared_error(iytest_norm, iypred, multioutput='uniform_average')
+    rmse = np.sqrt(mse)
+    r2 = r2_score(iytest_norm, iypred, multioutput='uniform_average')
+    print(
+        f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+        f" \nTime: {t1:.3} seconds"
+    )
+    print("Done!\n")
+
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Cluster: 1
+Training Time: 3.689 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: 0.177 
+Time: 0.783 seconds
+Done!
+
+Cluster: 2
+Training Time: 2.454 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: 0.243 
+Time: 0.823 seconds
+Done!
+
+Cluster: 3
+Training Time: 2.481 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.001
+R2: 0.133 
+Time: 0.811 seconds
+Done!
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Method II - Clustering the Outputs
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+clf = KMeans(init='k-means++', n_clusters=3, n_init=20, verbose=None)
+
+clf.fit(ytrain_norm)
+
+clusters = clf.predict(ytrain_norm)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# model 1
+for imodel in np.unique(clusters):
+    
+    print(f"Cluster: {imodel+1}")
+    # get subset of data which resides in cluster
+    ix = xtrain_norm[clusters == imodel]
+    iy = ytrain_norm[clusters == imodel]
+    
+#     print(ix.shape, iy.shape)
+    
+    # training and testing split
+    train_size = 0.8
+    random_state = 123
+
+    ixtrain, ixtest, iytrain, iytest = train_test_split(
+        ix, iy, train_size=train_size, random_state=random_state
+    )
+    
+    print(ix.shape, iy.shape)
+    
+    # Standardize Inputs (per dimension)
+    x_mean, x_std = ixtrain.mean(axis=0), ixtrain.std(axis=0)
+
+    ixtrain_norm = (ixtrain - x_mean) / x_std
+    ixtest_norm = (ixtest - x_mean) / x_std
+
+    # Normalize Outputs
+    y_mean = iytrain.mean(axis=0)
+
+    iytrain_norm = iytrain - y_mean
+    iytest_norm = iytest - y_mean
+    
+    # =======================
+    # PCA
+    # =======================
+    n_components = 20
+
+    pca_model = PCA(n_components=n_components)
+
+    iytrain_red = pca_model.fit_transform(iytrain_norm)
+    iytest_red = pca_model.transform(iytest_norm)
+    
+    # =======================
+    # ML Algorithm
+    # =======================
+    rf_model = RandomForestRegressor(
+    n_estimators=1000, 
+    criterion='mse',
+    n_jobs=-1,
+    random_state=123,
+    warm_start=False,
+    verbose=0
+    )
+
+    t0 = time.time()
+    rf_model.fit(ixtrain_norm, iytrain_red)
+    t1 = time.time() - t0
+
+    print(
+        f"Training Time: {t1:.3f} seconds"
+    )
+    
+    # Predictions
+    t0 = time.time()
+    iypred_red = rf_model.predict(ixtest_norm)
+    t1 = time.time() - t0
+    iypred = pca_model.inverse_transform(iypred_red)
+
+
+    # Get Average Stats
+    mae = mean_absolute_error(iytest_norm, iypred, multioutput='uniform_average')
+    mse = mean_squared_error(iytest_norm, iypred, multioutput='uniform_average')
+    rmse = np.sqrt(mse)
+    r2 = r2_score(iytest_norm, iypred, multioutput='uniform_average')
+    print(
+        f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+        f" \nTime: {t1:.3} seconds"
+    )
+    print("Done!\n")
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Cluster: 1
+(854, 8) (854, 276)
+Training Time: 2.879 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.155 
+Time: 0.805 seconds
+Done!
+
+Cluster: 2
+(1299, 8) (1299, 276)
+Training Time: 3.086 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: 0.244 
+Time: 0.802 seconds
+Done!
+
+Cluster: 3
+(264, 8) (264, 276)
+Training Time: 2.260 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.001
+R2: 0.055 
+Time: 0.851 seconds
+Done!
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Method III - Binning the Outputs
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+ytrain_norm.values[:, :75].shape
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(2417, 75)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+intervals = [
+    (0, 90), (90, 180), (180, 276)
+]
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+for i in gen_even_slices(ytrain_norm.shape[1], 10):
+    print(i)
+    break
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>slice(0, 28, None)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# model 1
+for idx in gen_even_slices(ytrain_norm.shape[1], 10):
+    
+    print(f"Cluster: {idx}")
+    # get subset of data which resides in cluster
+    ix = xtrain_norm
+    iy = ytrain_norm.values[:, idx]
+    print(ix.shape, iy.shape)
+#     print(ix.shape, iy.shape)
+    
+    # training and testing split
+    train_size = 0.8
+    random_state = 123
+
+    ixtrain, ixtest, iytrain, iytest = train_test_split(
+        ix, iy, train_size=train_size, random_state=random_state
+    )
+    
+    
+    
+    # Standardize Inputs (per dimension)
+    x_mean, x_std = ixtrain.mean(axis=0), ixtrain.std(axis=0)
+
+    ixtrain_norm = (ixtrain - x_mean) / x_std
+    ixtest_norm = (ixtest - x_mean) / x_std
+
+    # Normalize Outputs
+    y_mean = iytrain.mean(axis=0)
+
+    iytrain_norm = iytrain - y_mean
+    iytest_norm = iytest - y_mean
+    
+    # =======================
+    # PCA
+    # =======================
+    n_components = 20
+
+    pca_model = PCA(n_components=n_components)
+
+    iytrain_red = pca_model.fit_transform(iytrain_norm)
+    iytest_red = pca_model.transform(iytest_norm)
+    
+    # =======================
+    # ML Algorithm
+    # =======================
+    rf_model = RandomForestRegressor(
+    n_estimators=1000, 
+    criterion='mse',
+    n_jobs=-1,
+    random_state=123,
+    warm_start=False,
+    verbose=0
+    )
+
+    t0 = time.time()
+    rf_model.fit(ixtrain_norm, iytrain_red)
+    t1 = time.time() - t0
+
+    print(
+        f"Training Time: {t1:.3f} seconds"
+    )
+    
+    # Predictions
+    t0 = time.time()
+    iypred_red = rf_model.predict(ixtest_norm)
+    t1 = time.time() - t0
+    iypred = pca_model.inverse_transform(iypred_red)
+
+
+    # Get Average Stats
+    mae = mean_absolute_error(iytest_norm, iypred, multioutput='uniform_average')
+    mse = mean_squared_error(iytest_norm, iypred, multioutput='uniform_average')
+    rmse = np.sqrt(mse)
+    r2 = r2_score(iytest_norm, iypred, multioutput='uniform_average')
+    print(
+        f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+        f" \nTime: {t1:.3} seconds"
+    )
+    print("Done!\n")
+
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Cluster: slice(0, 28, None)
+(2417, 8) (2417, 28)
+Training Time: 4.667 seconds
+MAE: 0.001
+MSE: 0.000
+RMSE: 0.001
+R2: 0.143 
+Time: 0.804 seconds
+Done!
+
+Cluster: slice(28, 56, None)
+(2417, 8) (2417, 28)
+Training Time: 3.902 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.034 
+Time: 0.788 seconds
+Done!
+
+Cluster: slice(56, 84, None)
+(2417, 8) (2417, 28)
+Training Time: 2.248 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.022 
+Time: 0.803 seconds
+Done!
+
+Cluster: slice(84, 112, None)
+(2417, 8) (2417, 28)
+Training Time: 2.149 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: 0.000 
+Time: 0.773 seconds
+Done!
+
+Cluster: slice(112, 140, None)
+(2417, 8) (2417, 28)
+Training Time: 1.942 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.002 
+Time: 0.788 seconds
+Done!
+
+Cluster: slice(140, 168, None)
+(2417, 8) (2417, 28)
+Training Time: 2.003 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.004 
+Time: 0.793 seconds
+Done!
+
+Cluster: slice(168, 195, None)
+(2417, 8) (2417, 27)
+Training Time: 1.950 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.006 
+Time: 0.899 seconds
+Done!
+
+Cluster: slice(195, 222, None)
+(2417, 8) (2417, 27)
+Training Time: 1.893 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.017 
+Time: 0.32 seconds
+Done!
+
+Cluster: slice(222, 249, None)
+(2417, 8) (2417, 27)
+Training Time: 1.967 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.027 
+Time: 0.82 seconds
+Done!
+
+Cluster: slice(249, 276, None)
+(2417, 8) (2417, 27)
+Training Time: 2.164 seconds
+MAE: 0.000
+MSE: 0.000
+RMSE: 0.000
+R2: -0.032 
+Time: 0.796 seconds
+Done!
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+
+

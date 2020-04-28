@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>src.models.gpflow_gpu API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.models.gpflow_gpu</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># import gpflow
+# import gpflow.multioutput.kernels as mk
+# import gpflow.multioutput.features as mf
+# import numpy as np
+# from scipy.cluster.vq import kmeans2
+# from scipy.stats import norm
+
+# class SVGP(object):
+#     def __init__(self,
+#         num_inducing=2,
+#         iterations=1,
+#         small_iterations=1,
+#         adam_lr=0.01,
+#         gamma=0.1,
+#         minibatch_size=100,
+#         initial_likelihood_var=0.01,
+#         seed=0):
+
+#         self.num_inducing = num_inducing
+#         self.iterations = iterations
+#         self.small_iterations = small_iterations
+#         self.adam_lr = adam_lr
+#         self.gamma = gamma
+#         self.minibatch_size = minibatch_size
+#         self.initial_likelihood_var = initial_likelihood_var
+#         self.seed = seed
+#         self.model = None
+
+#     def fit(self, X, Y):
+#         if X.shape[0] &gt; self.num_inducing:
+#             Z = kmeans2(X, self.num_inducing, minit=&#39;points&#39;)[0]
+#         else:
+#             # pad with random values
+#             Z = np.concatenate([X, np.random.randn(self.num_inducing - X.shape[0], X.shape[1])], 0)
+
+#         # make model if necessary
+#         if not self.model:
+#             kern = gpflow.kernels.RBF(X.shape[1], lengthscales=float(X.shape[1])**0.5)
+#             lik = gpflow.likelihoods.Gaussian()
+#             lik.variance = self.initial_likelihood_var
+#             mb_size = self.minibatch_size if X.shape[0] &gt; self.minibatch_size else None
+#             self.model = gpflow.models.SVGP(X, Y, kern, lik, feat=Z, minibatch_size=mb_size)
+
+#             var_list = [[self.model.q_mu, self.model.q_sqrt]]
+#             self.model.q_mu.set_trainable(False)
+#             self.model.q_sqrt.set_trainable(False)
+#             self.ng = gpflow.train.NatGradOptimizer(gamma=self.gamma).make_optimize_tensor(self.model, var_list=var_list)
+#             self.adam = gpflow.train.AdamOptimizer(self.adam_lr).make_optimize_tensor(self.model)
+
+#             self.sess = self.model.enquire_session()
+
+#             iters = self.iterations
+
+#         else:
+#             iters = self.small_iterations
+
+#         # we might have new data
+#         self.model.X.assign(X, session=self.sess)
+#         self.model.Y.assign(Y, session=self.sess)
+#         self.model.feature.Z.assign(Z, session=self.sess)
+
+#         self.model.q_mu.assign(np.zeros((self.num_inducing, Y.shape[1])), session=self.sess)
+#         self.model.q_sqrt.assign(np.tile(np.eye(self.num_inducing)[None], [Y.shape[1], 1, 1]), session=self.sess)
+
+
+#         for _ in range(iters):
+#             self.sess.run(self.ng)
+#             self.sess.run(self.adam)
+#         self.model.anchor(session=self.sess)
+
+#     def predict(self, Xs, return_std=False):
+
+#         mean, var = self.model.predict_f(Xs, session=self.sess)
+
+#         if return_std:
+#             return mean, np.sqrt(var)
+#         else:
+#             return mean
+
+#     def sample(self, Xs, num_samples):
+#         m, v = self.predict(Xs)
+#         N, D = np.shape(m)
+#         m, v = np.expand_dims(m, 0), np.expand_dims(v, 0)
+#         return m + np.random.randn(num_samples, N, D) * (v ** 0.5)
+
+# class MOSVGP(object):
+#     def __init__(self,
+#         num_inducing=2,
+#         iterations=1,
+#         small_iterations=1,
+#         adam_lr=0.01,
+#         gamma=0.1,
+#         minibatch_size=100,
+#         initial_likelihood_var=0.01,
+#         seed=0):
+
+#         self.num_inducing = num_inducing
+#         self.iterations = iterations
+#         self.small_iterations = small_iterations
+#         self.adam_lr = adam_lr
+#         self.gamma = gamma
+#         self.minibatch_size = minibatch_size
+#         self.initial_likelihood_var = initial_likelihood_var
+#         self.seed = seed
+#         self.model = None
+
+#     def fit(self, X, Y):
+
+#         n_samples, d_dimensions = X.shape
+#         n_samples, p_outputs = Y.shape
+
+#         if X.shape[0] &gt; self.num_inducing:
+#             Zs = [kmeans2(X, self.num_inducing, minit=&#39;points&#39;)[0] for _ in range(p_outputs)]
+#         else:
+#             # pad with random values
+#             Zs = [np.concatenate([X, np.random.randn(self.num_inducing - X.shape[0], X.shape[1])], 0) for _ in range(p_outputs)]
+#         feature_list = [gpflow.features.InducingPoints(Z) for Z in Zs]
+#         feature = mf.SeparateIndependentMof(feature_list)
+#         # make model if necessary
+#         if not self.model:
+
+#             # Define Kernel
+#             kern_list = [gpflow.kernels.RBF(X.shape[1], lengthscales=float(X.shape[1])**0.5) for _ in range(p_outputs)]
+#             kern = mk.SeparateIndependentMok(kern_list)
+
+#             # Define Likelihood
+#             lik = gpflow.likelihoods.Gaussian()
+#             lik.variance = self.initial_likelihood_var
+#             mb_size = self.minibatch_size if X.shape[0] &gt; self.minibatch_size else None
+#             self.model = gpflow.models.SVGP(X, Y, kern, lik, feat=feature, minibatch_size=mb_size)
+
+#             var_list = [[self.model.q_mu, self.model.q_sqrt]]
+#             self.model.q_mu.set_trainable(False)
+#             self.model.q_sqrt.set_trainable(False)
+#             self.ng = gpflow.train.NatGradOptimizer(gamma=self.gamma).make_optimize_tensor(self.model, var_list=var_list)
+#             self.adam = gpflow.train.AdamOptimizer(self.adam_lr).make_optimize_tensor(self.model)
+
+#             self.sess = self.model.enquire_session()
+
+#             iters = self.iterations
+
+#         else:
+#             iters = self.small_iterations
+
+#         # we might have new data
+#         self.model.X.assign(X, session=self.sess)
+#         self.model.Y.assign(Y, session=self.sess)
+#         self.model.feature.feat_list.assign(feature, session=self.sess)
+
+#         self.model.q_mu.assign(np.zeros((self.num_inducing, Y.shape[1])), session=self.sess)
+#         self.model.q_sqrt.assign(np.tile(np.eye(self.num_inducing)[None], [Y.shape[1], 1, 1]), session=self.sess)
+
+
+#         for _ in range(iters):
+#             self.sess.run(self.ng)
+#             self.sess.run(self.adam)
+#         self.model.anchor(session=self.sess)
+
+#     def predict(self, Xs, return_std=False):
+
+#         mean, var = self.model.predict_f(Xs, session=self.sess)
+
+#         if return_std:
+#             return mean, np.sqrt(var)
+#         else:
+#             return mean
+
+#     def sample(self, Xs, num_samples):
+#         m, v = self.predict(Xs)
+#         N, D = np.shape(m)
+#         m, v = np.expand_dims(m, 0), np.expand_dims(v, 0)
+#         return m + np.random.randn(num_samples, N, D) * (v ** 0.5)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.models" href="index.html">src.models</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
