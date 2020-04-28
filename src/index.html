@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
 <title>src API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="API Documentation …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,6 +20,40 @@
 <h1 class="title">Package <code>src</code></h1>
 </header>
 <section id="section-intro">
+<h1 id="api-documentation">API Documentation</h1>
+<hr>
+<h2 id="return-to-homepage"><a href="../"><strong>Return to HomePage</strong></a></h2>
+<hr>
+<p>You will see all of the code needed to run the experiments in case you would like to inspect some functions.</p>
+<hr>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>Make sure that <a href="https://docs.conda.io/en/latest/miniconda.html">miniconda</a> is installed.</li>
+<li>Clone the git repository</li>
+</ol>
+<pre><code class="bash">git clone https://github.com/IPL-UV/ml4ocean.git
+</code></pre>
+<ol>
+<li>Create a new environment from the <code>.yml</code> file and activate.</li>
+</ol>
+<pre><code class="bash">conda env create -f environment.yml
+source activate 2019_ml_ocean
+</code></pre>
+<ol>
+<li>(Optional) If you already have the sample <code>.yml</code> file then to save time whenever I upgrade it, just run these commands.</li>
+</ol>
+<pre><code class="bash">conda env update -f environment.yml
+</code></pre>
+<hr>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+
+.. include:: ../docs/APIREADME.md
+&#34;&#34;&#34;</code></pre>
+</details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -64,7 +98,13 @@
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#api-documentation">API Documentation</a><ul>
+<li><a href="#return-to-homepage">Return to HomePage</a></li>
+<li><a href="#installation">Installation</a></li>
+</ul>
+</li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
