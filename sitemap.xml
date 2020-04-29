@@ -1,151 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
      <loc>https://IPL-UV.github.io/ml4ocean/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/APIREADME/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://IPL-UV.github.io/ml4ocean/ideas/</loc>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/global_data/1.1_load_processed_data_refactored/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/global_data/1_load_processed_data/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/global_data/2_ml_algorithms/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/global_data/3_visualization/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/trial1_gps/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/trial2_gps/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/1_data_analysis/1_analysis_control/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/1_data_analysis/clustering/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/1_data_analysis/scaling/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/2_preprocessing/0_preproc_control/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/2_preprocessing/0_preproc_control_outputs/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/2_preprocessing/clustering/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/0_baseline_control/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/1_control_baseline/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/1_control_output_transform/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/revisit/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/custom_gpflow/gpflow_demo/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/custom_gpflow/multitask_svgp/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/custom_gpflow/svgp/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/3_models/custom_sklearn/1_multitask_vs_multioutput/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/4_pipeline/0.0_full_walkthrough/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/4_pipeline/2.0_experiment_refactored/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/4_pipeline/3.0_results/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/4_pipeline/4.0_validation/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/5_plots/figures_mlsp/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/0_loading_data/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/1_multitask_vs_multioutput/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/2_pca_transform/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/3_confidence_intervals/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/Untitled/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/full_gp_example/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/full_walkthrough-Copy1/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/full_walkthrough/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/meta_info/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/sparse_gps/</loc>
-     <lastmod>2020-04-28</lastmod>
+     <lastmod>2020-04-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
