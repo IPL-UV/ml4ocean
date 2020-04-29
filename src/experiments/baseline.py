@@ -3,10 +3,10 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
-from features.build_features import CycleTransform, GeoCartTransform
+from src.features.build_features import CycleTransform, GeoCartTransform
 
 # Datasets
-from data.make_dataset import (
+from src.data.make_dataset import (
     DataLoader,
     load_standard_data,
     load_high_dim_data,
@@ -27,4 +27,3 @@ class ProcessParams:
 
 class ModelParams:
     model = "gp"
-

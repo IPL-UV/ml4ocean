@@ -1,0 +1,1009 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Custom Multi-Task Function
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In this notebook, we will be looking at the difference between multitask and multioutput. In a nutshell, multioutput is when we have a **single function** that is able to return the multidimensional vector of labels and multitask is when we have a **function for each output** of the multidimensional vector of labels. There are pros and cons to each of these methods so it's up to the expert to give the data scientists some reasons as to why one would choose one over the other.
+
+Let's define some terms: we have some dataset $\mathcal{D}=\{X,Y\}$ of pairs of input $X \in \mathbb{R}^{N\times D}$ and ouputs $Y \in \mathbb{R}^{N \times O}$. Here $N$ is the number of samples, $D$ is the number of features/dimensions and $O$ are the number of outputs (or tasks).
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import numpy as np
+import sys
+sys.path.insert(0, "/Users/eman/Documents/code_projects/ml4ocean")
+
+from src.models.utils import MultiTaskGP, PCATargetTransform
+
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, BayesianRidge
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import WhiteKernel, ConstantKernel, RBF
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.utils.estimator_checks import check_estimator
+import time as time
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+check_estimator(GaussianProcessRegressor)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Make Fake Dataset
+X, y = make_regression(
+    n_samples=500, 
+    n_features=5,    # Total Features
+    n_informative=3,   # Informative Features 
+    n_targets=10,
+    bias=10,
+    noise=0.8,
+    random_state=123
+
+)
+
+# Training and Testing
+xtrain, xtest, ytrain, ytest = train_test_split(X, y, train_size=100, random_state=123)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/Users/eman/anaconda3/envs/sci_py36/lib/python3.6/site-packages/sklearn/model_selection/_split.py:2179: FutureWarning: From version 0.21, test_size will always complement train_size unless both are specified.
+  FutureWarning)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Algorithm I 
+
+#### GP w. Sklearn Function
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# Fit Model
+t0 = time.time()
+gp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predict with test set
+ypred, ystd = gp_model.predict(xtest, return_std=True)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.830
+MSE: 1.124
+RMSE: 1.060
+R2: 1.000 
+Time: 0.395 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### GPR w. MultiOutput (sklearn)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# Define Multioutput function
+gp_model_multi = MultiOutputRegressor(
+    gp_model, 
+    n_jobs=-1,              # Number of cores to use to parallelize the training
+)
+
+# Fit Model
+t0 = time.time()
+gp_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predict with test set
+ypred = gp_model_multi.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.671
+MSE: 0.713
+RMSE: 0.844
+R2: 1.000 
+Time: 20.0 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### GPR  w. MultiTask (custom)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# Define Multioutput function
+gp_model_multi = MultiTaskGP(
+    gp_model, 
+    n_jobs=1,              # Number of cores to use to parallelize the training
+)
+
+# Fit Model
+t0 = time.time()
+gp_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+print(
+    f"Training \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training 
+Time: 26.2 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Predict with test set
+t0 = time.time()
+ypred1, ystd = gp_model_multi.predict(xtest, return_std=True)
+print(ypred.shape, ystd.shape)
+ypred2 = gp_model_multi.predict(xtest)
+np.testing.assert_array_equal(ypred1, ypred2)
+t1 = time.time() - t0
+# Get Stats
+mae = mean_absolute_error(ypred2, ytest)
+mse = mean_squared_error(ypred2, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred2, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>return std
+(500, 5) (500, 5)
+Dont return std
+GP Model:
+MAE: 0.671
+MSE: 0.713
+RMSE: 0.844
+R2: 1.000 
+Time: 0.117 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Test II - PCA Transform
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### GPR w. MultiOutput
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# Fit Model
+t0 = time.time()
+gp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predict with test set
+ypred, ystd = gp_model.predict(xtest, return_std=True)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.830
+MSE: 1.124
+RMSE: 1.060
+R2: 1.000 
+Time: 0.666 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### GPR MultiOutput w. PCA Transform
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# PCA Transform 
+
+gp_pcaoutput = PCATargetTransform(
+    regressor=gp_model,
+    n_components=3
+)
+# Fit Model
+t0 = time.time()
+gp_pcaoutput.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+
+
+# Predict with test set
+ypred, ystd = gp_pcaoutput.predict(xtest, return_std=True)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.826
+MSE: 1.122
+RMSE: 1.059
+R2: 1.000 
+Time: 0.487 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### GPR w. MultiTask (Custom) + PCA Transform
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+
+
+# Define Multioutput function
+gp_model_multi = MultiTaskGP(
+    gp_model, 
+    n_jobs=1,                 # Number of cores to use to parallelize the training
+)
+
+# PCA Transform 
+gp_pcaoutput = PCATargetTransform(
+    regressor=gp_model_multi,
+    n_components=3
+)
+
+# Fit Model
+t0 = time.time()
+gp_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+print(
+    f"Training \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training 
+Time: 2.34 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Predict with test set
+t0 = time.time()
+ypred1, ystd = gp_model_multi.predict(xtest, return_std=True)
+print(ypred.shape, ystd.shape)
+ypred2 = gp_model_multi.predict(xtest)
+np.testing.assert_array_equal(ypred1, ypred2)
+t1 = time.time() - t0
+# Get Stats
+mae = mean_absolute_error(ypred2, ytest)
+mse = mean_squared_error(ypred2, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred2, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>return std
+(400, 5) (400, 5)
+Dont return std
+GP Model:
+MAE: 19.693
+MSE: 2686.228
+RMSE: 51.829
+R2: -138094540933361.469 
+Time: 0.0643 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+linear_model = LinearRegression()
+t0 = time.time()
+linear_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+ypred = linear_model.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.00388 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Test II - MultiTask Linear Regression
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+linear_model_multi = MultiOutputRegressor(
+    LinearRegression(), 
+    n_jobs=-1,              # Number of cores to use to parallelize the training
+)
+
+t0 = time.time()
+linear_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+ypred = linear_model_multi.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.143 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The results are exactly the same in the case of Linear Regression. But for more complex models, we can expect that this will not be the same. One obvious trade-off is the number of tasks (outputs) that we have. 100 outputs is quite a lot so that requires a lot of time to train.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Algorithm II - GPR w. PCA Transform
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### MultiOutput
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The GP algorithm does have multioutput so we can just pass in a vector of labels.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# define GP model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# train GP Model
+t0 = time.time()
+gp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+ypred = gp_model.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.697
+MSE: 0.762
+RMSE: 0.873
+R2: 1.000 
+Time: 8.17 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define kernel function
+kernel = ConstantKernel() * RBF() + WhiteKernel()
+
+# Define GP Model
+gp_model = GaussianProcessRegressor(
+    kernel=kernel,            # kernel function (very important)
+    normalize_y=True,         # good standard practice
+    random_state=123,         # reproducibility
+    n_restarts_optimizer=10,  # good practice (avoids local minima)
+)
+
+# Define Multioutput function
+gp_model_multi = MultiOutputRegressor(
+    gp_model, 
+    n_jobs=-1,              # Number of cores to use to parallelize the training
+)
+
+# Fit Model
+t0 = time.time()
+gp_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predict with test set
+ypred = gp_model_multi.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.698
+MSE: 0.766
+RMSE: 0.875
+R2: 1.000 
+Time: 10.8 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+**Slightly** better accuracy but notice in this case the training time was similar. This sometimes happens because some algorithms have a difficult time converging when there are multiple outputs.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Algorithm III - Bayesian Ridge Regression
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+This algorithm does not have multioutput functionality so instead we will use the multi-task functionality.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Multi-Task
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define GP Model
+bayes_model = BayesianRidge(
+    n_iter=1000,
+    normalize=True,         # good standard practice
+    verbose=1,              # Gives updates
+)
+
+# Define Multioutput function
+bayes_model_multi = MultiOutputRegressor(
+    bayes_model, 
+    n_jobs=-1,              # Number of cores to use to parallelize the training
+)
+
+# Fit Model
+t0 = time.time()
+bayes_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predict with test set
+ypred = bayes_model_multi.predict(xtest)
+
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.0338 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+
+

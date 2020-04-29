@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from typing import Tuple, Optional, List
-from visualization.visualize import get_depth_labels
+from src.visualization.visualize import get_depth_labels
 
 DATA_PATH = "/home/emmanuel/projects/2020_ml_ocn/data/RAW/CONTROL/"
 region1 = "NORTH_ATLANTIC"
@@ -522,4 +522,3 @@ def get_data(params):
 
     dataset = {"Xtrain": Xtr, "Xtest": Xte, "ytrain": ytr, "ytest": yte}
     return dataset
-

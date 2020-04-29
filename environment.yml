@@ -1,33 +1,66 @@
-name: 2019_ml_ocean
+name: 2020_ml_ocean
 channels:
 - defaults
 - conda-forge
 dependencies:
-- python=3.6
-# Standard Python Libraries
-- scipy
-- numpy
-- pandas
-# Plotting Libraries
+- python=3.8
+# Standard Libraries
+- numpy             # Numerical Linear Algebra
+- scipy             # Scientific Computing
+- xarray            # Data structures
+- pandas            # Data structure
+- scikit-learn      # Machine Learning
+- scikit-image      # Image Processing
+- statsmodels       # Statistical Learning
+- pymc3             # Probabilistic programming library
+# Plotting
 - matplotlib
-- cartopy
 - seaborn
-# ML Libraries
-- scikit-learn
-- statsmodels
-# Data Structures
-- h5py
-- xarray
-# Logistics
-- ipykernel
-# Special ML Libraries
-- GPy
-# Geoprocessing
+- bokeh
+- plotly::plotly==4.6.0
+- pyviz::geoviews
+- conda-forge::cartopy
+- datashader
+# Geospatial packages
 - geopandas
-- shapely
-- descartes
-# Tensor Libraries
+- conda-forge::regionmask
+- conda-forge::xesmf
+# Scale
+- cython
+- numba
+- dask              # Out-of-Core processing
+- dask-ml           # Out-of-Core machine learning
+# Storage
+- hdf5              # standard large storage h5
+- pytables          # high-level storage h5
+- conda-forge::zarr
+# GUI
+- conda-forge::nodejs               # for extensions in jupyterlab
+- conda-forge::tqdm   
+# Pip Packages    
+- pip
 - pip:
-  - tensorflow==2.0.0
-  - tensorflow-probability==0.8
-  - -e "git+https://github.com/GPflow/GPflow.git@develop-2.0#egg=gpflow"
+    # GP Libraries
+    - tensorflow
+    - tensorflow-probability
+    - gpflow
+    - "git+https://github.com/SheffieldML/GPy.git#egg=GPy"
+    - "git+https://github.com/google/edward2.git#egg=edward2"
+    # Jupyter
+    - ipykernel
+    - ipywidgets
+    # Formatters
+    - black                   # no nonsense formatter
+    - pylint                  # linter
+    - isort                   # imports sorter
+    - flake8                  # linter
+    - mypy                    # type checker
+    - pytest                  # testing suite
+    - pyprojroot   # resolves paths in notebooks
+    # Extra
+    - netCDF4
+    # Documentation
+    - mkdocs-material 
+    - mknotebooks
+    - pymdown-extensions 
+    - pdoc3

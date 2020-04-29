@@ -1,144 +1,128 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: conda format style types black test link check notebooks
+.DEFAULT_GOAL = help
 
-#################################################################################
-# GLOBALS                                                                       #
-#################################################################################
+PYTHON = python
+VERSION = 3.8
+NAME = ml4ocn
+ROOT = ./
+PIP = pip
+CONDA = conda
+SHELL = bash
+PKGROOT = src
+HOST = 127.0.0.1
+PORT = 3002
 
-PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
-PROFILE = default
-PROJECT_NAME = 2019_ocean
-PYTHON_INTERPRETER = python3
+help:	## Display this help
+		@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+##@ Install Environments
 
-#################################################################################
-# COMMANDS                                                                      #
-#################################################################################
+conda:  ## setup a conda environment
+		$(info Installing the environment)
+		@printf "Creating conda environment...\n"
+		${CONDA} env create -f environment.yml
+		@printf "\n\nConda environment created! \033[1;34mRun \`conda activate ${NAME}\` to activate it.\033[0m\n\n\n"
 
-## Install Python Dependencies
-requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+conda_dev:  ## setup a conda environment for development
+		@printf "Creating conda dev environment...\n"
+		${CONDA} env create -f environment_dev.yml
+		@printf "\n\nConda dev environment created! \033[1;34mRun \`conda activate ${NAME}\` to activate it.\033[0m\n\n\n"
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py
+##@ Update Environments
 
-## Delete all compiled Python files
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+envupdate: ## update conda environment
+		@printf "Updating conda environment...\n"
+		${CONDA} env update -f environment.yml
+		@printf "Conda environment updated!"
+	
+envupdatedev: ## update conda environment
+		@printf "Updating conda dev environment...\n"
+		${CONDA} env update -f environment_dev.yml
+		@printf "Conda dev environment updated!"
 
-## Lint using flake8
-lint:
-	flake8 src
+##@ Formatting
 
-## Upload Data to S3
-sync_data_to_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync data/ s3://$(BUCKET)/data/
-else
-	aws s3 sync data/ s3://$(BUCKET)/data/ --profile $(PROFILE)
-endif
+black:  ## Format code in-place using black.
+		black ${PKGROOT}/ tests/ -l 79 .
 
-## Download Data from S3
-sync_data_from_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync s3://$(BUCKET)/data/ data/
-else
-	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
-endif
+format: ## Code styling - black, isort
+		black --check --diff ${PKGROOT} tests
+		@printf "\033[1;34mBlack passes!\033[0m\n\n"
+		isort ${PKGROOT}/ tests/
+		@printf "\033[1;34misort passes!\033[0m\n\n"
 
-## Set up python interpreter environment
-create_environment:
-ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
-	conda create --name $(PROJECT_NAME) python=3
-else
-	conda create --name $(PROJECT_NAME) python=2.7
-endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
-else
-	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
-	@echo ">>> Installing virtualenvwrapper if not already intalled.\nMake sure the following lines are in shell startup file\n\
-	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
-	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
-endif
+style:  ## Code lying - pylint
+		@printf "Checking code style with flake8...\n"
+		flake8 ${PKGROOT}/
+		@printf "\033[1;34mPylint passes!\033[0m\n\n"
+		@printf "Checking code style with pydocstyle...\n"
+		pydocstyle ${PKGROOT}/
+		@printf "\033[1;34mpydocstyle passes!\033[0m\n\n"
 
-## Test python environment is setup correctly
-test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
+lint: format style types  ## Lint code using pydocstyle, black, pylint and mypy.
+check: lint test  # Both lint and test code. Runs `make lint` followed by `make test`.
 
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
+##@ Type Checking
+
+types:	## Type checking with mypy
+		@printf "Checking code type signatures with mypy...\n"
+		python -m mypy ${PKGROOT}/
+		@printf "\033[1;34mMypy passes!\033[0m\n\n"
+
+##@ Testing
+
+test:  ## Test code using pytest.
+		@printf "\033[1;34mRunning tests with pytest...\033[0m\n\n"
+		pytest -v rbig tests
+		@printf "\033[1;34mPyTest passes!\033[0m\n\n"
+
+##@ Notebooks
+
+notebooks: notebooks/* # Convert notebooks to html files
+		jupyter nbconvert --config nbconfig.py --execute --ExecutePreprocessor.kernel_name="pymc4-dev" --ExecutePreprocessor.timeout=1200
+		rm notebooks/*.html
 
 
+# JUPYTER NOTEBOOKS
+notebooks_to_docs: ## Move notebooks to docs notebooks directory
+		@printf "\033[1;34mCreating notebook directory...\033[0m\n"
+		mkdir -p docs/notebooks
+		@printf "\033[1;34mRemoving old notebooks...\033[0m\n"
+		rm -rf docs/notebooks/*
+		@printf "\033[1;34mCopying Notebooks to directory...\033[0m\n"
+		rsync -zarv notebooks/ docs/notebooks/ --include="*.ipynb" --exclude="*.csv" --exclude=".ipynb_checkpoints/" 
+		@printf "\033[1;34mDone!\033[0m\n"
+jlab_html:
+		mkdir -p docs/notebooks
+		jupyter nbconvert notebooks/*.ipynb --to html --output-dir docs/notebooks/
 
-#################################################################################
-# Self Documenting Commands                                                     #
-#################################################################################
+##@ Documentation
 
-.DEFAULT_GOAL := help
+pdocs:	## Generate python API Documentation with pdoc
+		@printf "\033[1;34mCreating python API documentation with pdoc...\033[0m\n"
+		pdoc --html --overwrite ${PKGROOT} --html-dir docs/
+		@printf "\033[1;34mpdoc completed!\033[0m\n\n"
 
-# Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
-# sed script explained:
-# /^##/:
-# 	* save line in hold space
-# 	* purge line
-# 	* Loop:
-# 		* append newline + line to hold space
-# 		* go to next line
-# 		* if line starts with doc comment, strip comment character off and loop
-# 	* remove target prerequisites
-# 	* append hold space (+ newline) to line
-# 	* replace newline plus comments by `---`
-# 	* print line
-# Separate expressions are necessary because labels cannot be delimited by
-# semicolon; see <http://stackoverflow.com/a/11799865/1968>
-.PHONY: help
-help:
-	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
-	@echo
-	@sed -n -e "/^## / { \
-		h; \
-		s/.*//; \
-		:doc" \
-		-e "H; \
-		n; \
-		s/^## //; \
-		t doc" \
-		-e "s/:.*//; \
-		G; \
-		s/\\n## /---/; \
-		s/\\n/ /g; \
-		p; \
-	}" ${MAKEFILE_LIST} \
-	| LC_ALL='C' sort --ignore-case \
-	| awk -F '---' \
-		-v ncol=$$(tput cols) \
-		-v indent=19 \
-		-v col_on="$$(tput setaf 6)" \
-		-v col_off="$$(tput sgr0)" \
-	'{ \
-		printf "%s%*s%s ", col_on, -indent, $$1, col_off; \
-		n = split($$2, words, " "); \
-		line_length = ncol - indent; \
-		for (i = 1; i <= n; i++) { \
-			line_length -= length(words[i]) + 1; \
-			if (line_length <= 0) { \
-				line_length = ncol - indent - length(words[i]) - 1; \
-				printf "\n%*s ", -indent, " "; \
-			} \
-			printf "%s ", words[i]; \
-		} \
-		printf "\n"; \
-	}' \
-	| more $(shell test $(shell uname) = Darwin && echo '--no-init --raw-control-chars')
+pdocs-live: pdocs ## Start python API live documentation
+		@printf "\033[1;34mStarting live documentation with pdoc...\033[0m\n"
+		pdoc ${PKGROOT} --http localhost:8801
+
+mkdocs: notebooks_to_docs ## Build site documentation with mkdocs
+		@printf "\033[1;34mCreating full documentation with mkdocs...\033[0m\n"
+		mkdocs build --config-file mkdocs.yml --clean --theme material --site-dir site/
+		@printf "\033[1;34mmkdocs completed!\033[0m\n\n"
+
+docs-live: notebooks_to_docs pdocs ## Build mkdocs documentation live
+		@printf "\033[1;34mStarting live docs with mkdocs...\033[0m\n"
+		mkdocs serve --dev-addr $(HOST):$(PORT) --theme material
+
+docs-live-d: notebooks_to_docs pdocs ## Build mkdocs documentation live (quicker reload)
+		@printf "\033[1;34mStarting live docs with mkdocs...\033[0m\n"
+		mkdocs serve --dev-addr $(HOST):$(PORT)  --dirtyreload --theme material
+
+docs: pdocs mkdocs ## Build the docs (pdoc, MkDocs)
+
+docsdeploy: docs ## Deploy Documentation
+		@printf "\033[1;34mDeploying docs...\033[0m\n"
+		mkdocs gh-deploy
+		@printf "\033[1;34mDocs delopyed!\033[0m\n\n"

@@ -12,7 +12,7 @@ from sklearn.preprocessing import FunctionTransformer
 from sklearn.pipeline import Pipeline
 
 # Datasets
-from data.make_dataset import (
+from src.data.make_dataset import (
     DataLoader,
     load_standard_data,
     load_high_dim_data,
@@ -406,9 +406,10 @@ def run_output_preprocess(params, dataset):
 def run_output_postprocess(params, dataset):
 
     if params.std_ouputs == True:
-        
+
         def loginv(x):
             return 10 ** x
+
         dataset["out_post_trans"] = Pipeline(
             [
                 ("log", FunctionTransformer(func=np.log10, inverse_func=loginv)),

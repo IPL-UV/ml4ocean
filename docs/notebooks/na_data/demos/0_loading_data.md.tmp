@@ -1,0 +1,163 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.datasets import make_regression
+
+%matplotlib inline
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Reading Datasets
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+Below will demonstrate 3 different types of datasets that you may encounter and how to load them.
+
+* .csv/.txt file (Arrays) - **Done**
+* .csv/.txt file (Labeled Data)
+* .netcdf - Spatial-Temporal Data
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Create Sample Dataset and Save it as CSV - `np.savetxt`
+
+* [source](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savetxt.html)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Make Fake Dataset
+X, y = make_regression(
+    n_samples=1000, 
+    n_features=100,    # Total Features
+    n_informative=10,   # Informative Features 
+    n_targets=20,
+    bias=100,
+    noise=0.8,
+    random_state=123
+
+)
+
+# Print shape for confirmation
+print(X.shape, y.shape)
+
+# Save Data
+np.savetxt("/home/emmanuel/projects/2019_ocean/data/raw/sample_array_data.csv", X, delimiter=",")
+np.savetxt("/home/emmanuel/projects/2019_ocean/data/raw/sample_array_labels.csv", y, delimiter=",")
+
+# Delete the variables X, y
+del X, y
+# # Training and Testing
+# xtrain, xtest, ytrain, ytest = train_test_split(X, y, train_size=5000, random_state=123)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(1000, 100) (1000, 20)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Load Dataset - `np.loadtxt` 
+
+* [source](https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+X = np.loadtxt("/home/emmanuel/projects/2019_ocean/data/raw/sample_array_data.csv", delimiter=",")
+y = np.loadtxt("/home/emmanuel/projects/2019_ocean/data/raw/sample_array_labels.csv", delimiter=",")
+
+# Print shape for confirmation
+print(X.shape, y.shape)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(1000, 100) (1000, 20)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### TODO: pandas, netcdf4
+</div>
+</div>
+</div>
+
+

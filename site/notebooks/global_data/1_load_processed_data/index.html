@@ -1,0 +1,2812 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="ML 4 Ocean Applications">
+      
+      
+        <link rel="canonical" href="https://IPL-UV.github.io/ml4ocean/notebooks/global_data/1_load_processed_data/">
+      
+      
+        <meta name="author" content="J. Emmanuel Johnson">
+      
+      <link rel="shortcut icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.3">
+    
+    
+      
+        <title>1 load processed data - ML 4 Ocean Applications</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.62d34fff.min.css">
+      
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.c8acc6db.min.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#2196f3">
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=source+code+pro:300,400,400i,700%7Csource+code+pro&display=fallback">
+        <style>body,input{font-family:"source code pro",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"source code pro",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#demo-i-loading-the-data" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-header-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            ML 4 Ocean Applications
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              1 load processed data
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    ML 4 Ocean Applications
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../.." title="Overview" class="md-nav__link">
+      Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../APIREADME/" title="API Documentation" class="md-nav__link">
+      API Documentation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../ideas/" title="Ideas" class="md-nav__link">
+      Ideas
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Notebooks
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-1" type="checkbox" id="nav-4-1" checked>
+    
+    <label class="md-nav__link" for="nav-4-1">
+      Global data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Global data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-1">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Global data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../1.1_load_processed_data_refactored/" title="1.1 load processed data refactored" class="md-nav__link">
+      1.1 load processed data refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        1 load processed data
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13Z" /></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="1 load processed data" class="md-nav__link md-nav__link--active">
+      1 load processed data
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#important-paths-and-directories" class="md-nav__link">
+    Important - Paths and Directories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-packages" class="md-nav__link">
+    Python Packages
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-load-processed-global-data" class="md-nav__link">
+    1. Load Processed Global Data
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Load Processed Global Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-meta-data" class="md-nav__link">
+    1.1 - Meta Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-input-data" class="md-nav__link">
+    1.2 - Input Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-checks" class="md-nav__link">
+    1.3 - Checks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-convert-metadata-to-indices-important" class="md-nav__link">
+    1.4 - Convert metadata to indices (Important)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-training-and-test-split" class="md-nav__link">
+    2 - Training and Test Split
+  </a>
+  
+    <nav class="md-nav" aria-label="2 - Training and Test Split">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-independent-set-i-soca2016" class="md-nav__link">
+    2.1 - Independent Set I (SOCA2016)
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 - Independent Set I (SOCA2016)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ana-why-378-rows-if-there-are-4-floats-i-guess-they-are-not-the-same-length-just-to-have-it-clear" class="md-nav__link">
+    Ana: Why 378 rows if there are 4 floats? I guess they are not the same length. Just to have it clear.
+  </a>
+  
+    <nav class="md-nav" aria-label="Ana: Why 378 rows if there are 4 floats? I guess they are not the same length. Just to have it clear.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#22-indpendent-set-ii-isprs2020" class="md-nav__link">
+    2.2 - Indpendent Set II (ISPRS2020)
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 - Indpendent Set II (ISPRS2020)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks_1" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ml-data" class="md-nav__link">
+    2.3 - ML Data
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 - ML Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks_2" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-inputs-outputs" class="md-nav__link">
+    2.4 - Inputs, Outputs
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-final-dataset-saving" class="md-nav__link">
+    3. Final Dataset (saving)
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Final Dataset (saving)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-print-out-data-dimensions-w-metadata" class="md-nav__link">
+    3.1 - Print out data dimensions (w. metadata)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-saving" class="md-nav__link">
+    3.2 - Saving
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-loading" class="md-nav__link">
+    3.3 - Loading
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#questionana-if-we-have-alredy-saved-the-file-couldnt-we-still-use-the-input_df-here-the-one-we-saved-it-is-supposed-not-to-be-modified-right" class="md-nav__link">
+    QUESTION(Ana): if we have alredy saved the file, couldn't we still use the input_df here? The one we saved it is supposed not to be modified , right?
+  </a>
+  
+    <nav class="md-nav" aria-label="QUESTION(Ana): if we have alredy saved the file, couldn't we still use the input_df here? The one we saved it is supposed not to be modified , right?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#34-checking" class="md-nav__link">
+    3.4 - Checking
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#questionanashould-we-save-the-data-specifying-that-precision-already" class="md-nav__link">
+    QUESTION(Ana):Should we save the data specifying that precision already?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-save-the-rest-of-the-data" class="md-nav__link">
+    3.5 - Save the rest of the data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../2_ml_algorithms/" title="2 ml algorithms" class="md-nav__link">
+      2 ml algorithms
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../3_visualization/" title="3 visualization" class="md-nav__link">
+      3 visualization
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" type="checkbox" id="nav-4-2">
+    
+    <label class="md-nav__link" for="nav-4-2">
+      Na data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Na data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Na data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/trial1_gps/" title="Trial1 gps" class="md-nav__link">
+      Trial1 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/trial2_gps/" title="Trial2 gps" class="md-nav__link">
+      Trial2 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-3" type="checkbox" id="nav-4-2-3">
+    
+    <label class="md-nav__link" for="nav-4-2-3">
+      1 data analysis
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="1 data analysis" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        1 data analysis
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/1_data_analysis/1_analysis_control/" title="1 analysis control" class="md-nav__link">
+      1 analysis control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/1_data_analysis/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/1_data_analysis/scaling/" title="Scaling" class="md-nav__link">
+      Scaling
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-4" type="checkbox" id="nav-4-2-4">
+    
+    <label class="md-nav__link" for="nav-4-2-4">
+      2 preprocessing
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="2 preprocessing" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        2 preprocessing
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/2_preprocessing/0_preproc_control/" title="0 preproc control" class="md-nav__link">
+      0 preproc control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/2_preprocessing/0_preproc_control_outputs/" title="0 preproc control outputs" class="md-nav__link">
+      0 preproc control outputs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/2_preprocessing/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5" type="checkbox" id="nav-4-2-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5">
+      3 models
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="3 models" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        3 models
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/0_baseline_control/" title="0 baseline control" class="md-nav__link">
+      0 baseline control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/1_control_baseline/" title="1 control baseline" class="md-nav__link">
+      1 control baseline
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/1_control_output_transform/" title="1 control output transform" class="md-nav__link">
+      1 control output transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/revisit/" title="Revisit" class="md-nav__link">
+      Revisit
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-5" type="checkbox" id="nav-4-2-5-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5-5">
+      Custom gpflow
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom gpflow" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom gpflow
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/custom_gpflow/gpflow_demo/" title="Gpflow demo" class="md-nav__link">
+      Gpflow demo
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/custom_gpflow/multitask_svgp/" title="Multitask svgp" class="md-nav__link">
+      Multitask svgp
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/custom_gpflow/svgp/" title="Svgp" class="md-nav__link">
+      Svgp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-6" type="checkbox" id="nav-4-2-5-6">
+    
+    <label class="md-nav__link" for="nav-4-2-5-6">
+      Custom sklearn
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom sklearn" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom sklearn
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/3_models/custom_sklearn/1_multitask_vs_multioutput/" title="1 multitask vs multioutput" class="md-nav__link">
+      1 multitask vs multioutput
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-6" type="checkbox" id="nav-4-2-6">
+    
+    <label class="md-nav__link" for="nav-4-2-6">
+      4 pipeline
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="4 pipeline" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        4 pipeline
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/4_pipeline/0.0_full_walkthrough/" title="0.0 full walkthrough" class="md-nav__link">
+      0.0 full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/4_pipeline/2.0_experiment_refactored/" title="2.0 experiment refactored" class="md-nav__link">
+      2.0 experiment refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/4_pipeline/3.0_results/" title="3.0 results" class="md-nav__link">
+      3.0 results
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/4_pipeline/4.0_validation/" title="4.0 validation" class="md-nav__link">
+      4.0 validation
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-7" type="checkbox" id="nav-4-2-7">
+    
+    <label class="md-nav__link" for="nav-4-2-7">
+      5 plots
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="5 plots" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-7">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        5 plots
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/5_plots/figures_mlsp/" title="Figures mlsp" class="md-nav__link">
+      Figures mlsp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-8" type="checkbox" id="nav-4-2-8">
+    
+    <label class="md-nav__link" for="nav-4-2-8">
+      Demos
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Demos" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-8">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Demos
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/0_loading_data/" title="0 loading data" class="md-nav__link">
+      0 loading data
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/1_multitask_vs_multioutput/" title="1 multitask vs multioutput" class="md-nav__link">
+      1 multitask vs multioutput
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/2_pca_transform/" title="2 pca transform" class="md-nav__link">
+      2 pca transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/3_confidence_intervals/" title="3 confidence intervals" class="md-nav__link">
+      3 confidence intervals
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/Untitled/" title="Untitled" class="md-nav__link">
+      Untitled
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/full_gp_example/" title="Full gp example" class="md-nav__link">
+      Full gp example
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/full_walkthrough-Copy1/" title="full walkthrough Copy1" class="md-nav__link">
+      full walkthrough Copy1
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/full_walkthrough/" title="Full walkthrough" class="md-nav__link">
+      Full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/meta_info/" title="Meta info" class="md-nav__link">
+      Meta info
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../na_data/demos/sparse_gps/" title="Sparse gps" class="md-nav__link">
+      Sparse gps
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#important-paths-and-directories" class="md-nav__link">
+    Important - Paths and Directories
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-packages" class="md-nav__link">
+    Python Packages
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-load-processed-global-data" class="md-nav__link">
+    1. Load Processed Global Data
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Load Processed Global Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-meta-data" class="md-nav__link">
+    1.1 - Meta Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-input-data" class="md-nav__link">
+    1.2 - Input Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-checks" class="md-nav__link">
+    1.3 - Checks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-convert-metadata-to-indices-important" class="md-nav__link">
+    1.4 - Convert metadata to indices (Important)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-training-and-test-split" class="md-nav__link">
+    2 - Training and Test Split
+  </a>
+  
+    <nav class="md-nav" aria-label="2 - Training and Test Split">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-independent-set-i-soca2016" class="md-nav__link">
+    2.1 - Independent Set I (SOCA2016)
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 - Independent Set I (SOCA2016)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ana-why-378-rows-if-there-are-4-floats-i-guess-they-are-not-the-same-length-just-to-have-it-clear" class="md-nav__link">
+    Ana: Why 378 rows if there are 4 floats? I guess they are not the same length. Just to have it clear.
+  </a>
+  
+    <nav class="md-nav" aria-label="Ana: Why 378 rows if there are 4 floats? I guess they are not the same length. Just to have it clear.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#22-indpendent-set-ii-isprs2020" class="md-nav__link">
+    2.2 - Indpendent Set II (ISPRS2020)
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 - Indpendent Set II (ISPRS2020)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks_1" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ml-data" class="md-nav__link">
+    2.3 - ML Data
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 - ML Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checks_2" class="md-nav__link">
+    Checks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-inputs-outputs" class="md-nav__link">
+    2.4 - Inputs, Outputs
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-final-dataset-saving" class="md-nav__link">
+    3. Final Dataset (saving)
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Final Dataset (saving)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-print-out-data-dimensions-w-metadata" class="md-nav__link">
+    3.1 - Print out data dimensions (w. metadata)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-saving" class="md-nav__link">
+    3.2 - Saving
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-loading" class="md-nav__link">
+    3.3 - Loading
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#questionana-if-we-have-alredy-saved-the-file-couldnt-we-still-use-the-input_df-here-the-one-we-saved-it-is-supposed-not-to-be-modified-right" class="md-nav__link">
+    QUESTION(Ana): if we have alredy saved the file, couldn't we still use the input_df here? The one we saved it is supposed not to be modified , right?
+  </a>
+  
+    <nav class="md-nav" aria-label="QUESTION(Ana): if we have alredy saved the file, couldn't we still use the input_df here? The one we saved it is supposed not to be modified , right?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#34-checking" class="md-nav__link">
+    3.4 - Checking
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#questionanashould-we-save-the-data-specifying-that-precision-already" class="md-nav__link">
+    QUESTION(Ana):Should we save the data specifying that precision already?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-save-the-rest-of-the-data" class="md-nav__link">
+    3.5 - Save the rest of the data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/IPL-UV/ml4ocean/edit/master/docs/notebooks/global_data/1_load_processed_data.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h1 id="demo-i-loading-the-data">Demo I - Loading the Data<a class="headerlink" href="#demo-i-loading-the-data" title="Permanent link">&para;</a></h1>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="important-paths-and-directories"><strong>Important</strong> - Paths and Directories<a class="headerlink" href="#important-paths-and-directories" title="Permanent link">&para;</a></h3>
+<p>This is annoying but it needs to be defined otherwise things get confusing. We need a few important paths to be pre-defined:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project</td>
+<td><code>PROJECT_PATH</code></td>
+<td>top level directory for the project (assuming megatron)</td>
+</tr>
+<tr>
+<td>Code</td>
+<td><code>CODE_PATH</code></td>
+<td>folder of any dedicated functions that we use</td>
+</tr>
+<tr>
+<td>Raw Data</td>
+<td><code>RAW_PATH</code></td>
+<td>where the raw data is. Ideally, we <strong>never</strong> touch this ever except to read.</td>
+</tr>
+<tr>
+<td>Processed Data</td>
+<td><code>DATA_PATH</code></td>
+<td>where the processed data is stored</td>
+</tr>
+<tr>
+<td>Interim Data</td>
+<td><code>INTERIM_PATH</code></td>
+<td>where we save the training, validation and testing data</td>
+</tr>
+<tr>
+<td>Saved Models</td>
+<td><code>MODEL_PATH</code></td>
+<td>where we save any trained models</td>
+</tr>
+<tr>
+<td>Results Data</td>
+<td><code>RESULTS_PATH</code></td>
+<td>where we save any data results or outputs from ML models</td>
+</tr>
+<tr>
+<td>Figures</td>
+<td><code>FIG_PATH</code></td>
+<td>where we store any plotted figures during any part of our ML pipeline</td>
+</tr>
+</tbody>
+</table>
+<p>This cell checks to see if all of the paths exist. If there is a path missing, it probably means you're not in megatron. If that's the case...well, we'll cross that bridge when we get there.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c1"># define the top level directory</span>
+<span class="n">PROJECT_PATH</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/media/disk/erc/papers/2019_ML_OCN/&quot;</span><span class="p">)</span>
+<span class="n">CODE_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;ml4ocean&quot;</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
+
+<span class="c1"># check if path exists and is a directory</span>
+<span class="k">assert</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">CODE_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">CODE_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+
+<span class="c1"># add code and project paths to PYTHONPATH (to call functions)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">PROJECT_PATH</span><span class="p">))</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">CODE_PATH</span><span class="p">))</span>
+
+<span class="c1"># specific paths</span>
+<span class="n">FIG_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;ml4ocean/reports/figures/global/&quot;</span><span class="p">)</span>
+<span class="n">RAW_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;data/global/raw/&quot;</span><span class="p">)</span>
+<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;data/global/processed/&quot;</span><span class="p">)</span>
+<span class="n">INTERIM_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;data/global/interim/&quot;</span><span class="p">)</span>
+<span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;models/global/&quot;</span><span class="p">)</span>
+<span class="n">RESULTS_PATH</span> <span class="o">=</span> <span class="n">PROJECT_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;data/global/results/&quot;</span><span class="p">)</span>
+
+<span class="c1"># check if path exists and is a directory</span>
+<span class="k">assert</span> <span class="n">FIG_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">FIG_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">RAW_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">RAW_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">DATA_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">DATA_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">MODEL_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">MODEL_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">RESULTS_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">RESULTS_PATH</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="python-packages">Python Packages<a class="headerlink" href="#python-packages" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Standard packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="1-load-processed-global-data">1. Load Processed Global Data<a class="headerlink" href="#1-load-processed-global-data" title="Permanent link">&para;</a></h2>
+<p>In this section, I will load the metadata and the actual data. The steps involved are:</p>
+<ol>
+<li>Define the filepath (check for existence)</li>
+<li>Open meta data and real data</li>
+<li>Check that the samples correspond to each other.</li>
+<li>Check if # of features are the same
+</div>
+</div></li>
+</ol>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="11-meta-data">1.1 - Meta Data<a class="headerlink" href="#11-meta-data" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># name of file</span>
+<span class="n">meta_name</span> <span class="o">=</span> <span class="s2">&quot;METADATA_20200310.csv&quot;</span>
+
+<span class="c1"># get full path</span>
+<span class="n">meta_file</span> <span class="o">=</span> <span class="n">DATA_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">meta_name</span><span class="p">)</span>
+
+<span class="c1"># assert meta file exists</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">meta_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t exist. Check name or directory.&quot;</span>
+<span class="k">assert</span> <span class="n">meta_file</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="n">error_msg</span>
+
+<span class="c1"># assert meta file is a file</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">meta_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; isn&#39;t a file. Check name or directory.&quot;</span>
+<span class="k">assert</span> <span class="n">meta_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">(),</span> <span class="n">error_msg</span>
+
+<span class="c1"># open meta data</span>
+<span class="n">meta_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">meta_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+<span class="c1">#ANA: I got error &quot;AttributeError: &#39;DataFrame&#39; object has no attribute &#39;to_markdown&#39;&quot;&quot;</span>
+<span class="c1">#meta_df.head().to_markdown()</span>
+<span class="n">meta_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>wmo</th>
+      <th>n_cycle</th>
+      <th>N</th>
+      <th>lon</th>
+      <th>lat</th>
+      <th>juld</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2902086</td>
+      <td>1</td>
+      <td>1</td>
+      <td>88.695687</td>
+      <td>12.163850</td>
+      <td>23009.165972</td>
+      <td>2012-12-30 03:58:59</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2902086</td>
+      <td>10</td>
+      <td>10</td>
+      <td>88.603349</td>
+      <td>12.412847</td>
+      <td>23018.142361</td>
+      <td>2013-01-08 03:24:59</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2902086</td>
+      <td>100</td>
+      <td>64</td>
+      <td>86.203895</td>
+      <td>13.791507</td>
+      <td>23432.149305</td>
+      <td>2014-02-26 03:34:59</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2902086</td>
+      <td>101</td>
+      <td>65</td>
+      <td>86.311614</td>
+      <td>13.750043</td>
+      <td>23437.143750</td>
+      <td>2014-03-03 03:26:59</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2902086</td>
+      <td>102</td>
+      <td>66</td>
+      <td>86.397120</td>
+      <td>13.758830</td>
+      <td>23442.147222</td>
+      <td>2014-03-08 03:31:59</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">meta_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(25413, 7)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered"></div>
+</div>
+</div>
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="12-input-data">1.2 - Input Data<a class="headerlink" href="#12-input-data" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># name of file</span>
+<span class="n">data_name</span> <span class="o">=</span> <span class="s2">&quot;SOCA_GLOBAL2_20200310.csv&quot;</span>
+
+<span class="c1"># get full path</span>
+<span class="n">data_file</span> <span class="o">=</span> <span class="n">DATA_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">data_name</span><span class="p">)</span>
+
+<span class="c1"># assert exists</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">data_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t exist. Check name or directory.&quot;</span>
+<span class="k">assert</span> <span class="n">data_file</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="n">error_msg</span>
+
+<span class="c1"># assert meta file is a file</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">data_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; isn&#39;t a file. Check name or directory.&quot;</span>
+<span class="k">assert</span> <span class="n">data_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">(),</span> <span class="n">error_msg</span>
+
+<span class="c1"># load data</span>
+<span class="n">data_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1">## Same markdown error here</span>
+<span class="c1">#data_df.head().iloc[:, :6].to_markdown()</span>
+<span class="n">data_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>N</th>
+      <th>wmo</th>
+      <th>n_cycle</th>
+      <th>sla</th>
+      <th>PAR</th>
+      <th>RHO_WN_412</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2902086</td>
+      <td>1</td>
+      <td>-4.704400</td>
+      <td>42.6541</td>
+      <td>0.025462</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2902086</td>
+      <td>2</td>
+      <td>-4.038200</td>
+      <td>42.6541</td>
+      <td>0.025462</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>2902086</td>
+      <td>3</td>
+      <td>-3.460399</td>
+      <td>44.2927</td>
+      <td>0.024094</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2902086</td>
+      <td>4</td>
+      <td>-2.840400</td>
+      <td>42.7664</td>
+      <td>0.024917</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>2902086</td>
+      <td>5</td>
+      <td>-2.394000</td>
+      <td>42.7664</td>
+      <td>0.024917</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>6</td>
+      <td>2902086</td>
+      <td>6</td>
+      <td>-2.049000</td>
+      <td>42.7468</td>
+      <td>0.025830</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>7</td>
+      <td>2902086</td>
+      <td>7</td>
+      <td>-1.772300</td>
+      <td>42.7468</td>
+      <td>0.025830</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>8</td>
+      <td>2902086</td>
+      <td>8</td>
+      <td>-1.429900</td>
+      <td>42.6694</td>
+      <td>0.025811</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>9</td>
+      <td>2902086</td>
+      <td>9</td>
+      <td>-1.261000</td>
+      <td>44.5087</td>
+      <td>0.020570</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>10</td>
+      <td>2902086</td>
+      <td>10</td>
+      <td>-0.901500</td>
+      <td>44.5505</td>
+      <td>0.020603</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(25413, 48)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered"></div>
+</div>
+</div>
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="13-checks">1.3 - Checks<a class="headerlink" href="#13-checks" title="Permanent link">&para;</a></h3>
+<p>I do a number of checks to make sure that our data follows a standard and that I am reproducing the same results.</p>
+<ul>
+<li>Number of samples are equal for both</li>
+<li>7 meta features </li>
+<li>48 data features (26 data + 19 levels + 3 meta)</li>
+<li>check features in columns
+</div>
+</div></li>
+</ul>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># same number of samples</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Mismatch between meta and data: </span><span class="si">{</span><span class="n">data_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">meta_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">data_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">meta_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">error_msg</span>
+
+<span class="c1"># check number of samples</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">25413</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of samples: </span><span class="si">{</span><span class="n">data_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">data_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">error_msg</span>
+
+<span class="c1"># check meta feature names</span>
+<span class="n">meta_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;wmo&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cycle&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;juld&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">]</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Missing features in meta data.&quot;</span>
+<span class="k">assert</span> <span class="n">meta_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">==</span> <span class="n">meta_features</span><span class="p">,</span> <span class="n">error_msg</span>
+
+<span class="c1"># check data feature names</span>
+<span class="n">input_meta_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;wmo&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cycle&#39;</span><span class="p">]</span>
+<span class="n">input_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sla&#39;</span><span class="p">,</span> <span class="s1">&#39;PAR&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_412&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_443&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;RHO_WN_490&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_555&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_670&#39;</span><span class="p">,</span> <span class="s1">&#39;doy_sin&#39;</span><span class="p">,</span> <span class="s1">&#39;doy_cos&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;y_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;z_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3&#39;</span><span class="p">,</span> <span class="s1">&#39;PC4&#39;</span><span class="p">,</span> <span class="s1">&#39;PC5&#39;</span><span class="p">,</span> <span class="s1">&#39;PC6&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;PC7&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC4.1&#39;</span><span class="p">]</span>
+<span class="n">output_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bbp&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.1&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.2&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.3&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.4&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.5&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.6&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.7&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;bbp.8&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.9&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.10&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.11&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.12&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.13&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.14&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;bbp.15&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.16&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.17&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.18&#39;</span><span class="p">]</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">input_meta_features</span> <span class="o">+</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">output_features</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Missing features in input data.&quot;</span>
+<span class="k">assert</span> <span class="n">data_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">==</span> <span class="n">features</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="14-convert-metadata-to-indices-important">1.4 - Convert metadata to indices (<strong>Important</strong>)<a class="headerlink" href="#14-convert-metadata-to-indices-important" title="Permanent link">&para;</a></h3>
+<p>To make our life easier, we're going to eliminate the need to keep track of meta data all of the time. So I'm going to merge the datasets together to form one dataframe. Then I will set the index to be the metadata values. The remaining parts will be columns which will be features. </p>
+<p>So in the end, we will have a dataframe where:</p>
+<ul>
+<li>the <strong>indices</strong> is the metadata (e.g. wmo, n_cycle) </li>
+<li>the <strong>columns</strong> are the actual features (e.g. sla, pca components, bbp, etc).
+</div>
+</div></li>
+</ul>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># merge meta and data</span>
+<span class="n">full_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">meta_df</span><span class="p">,</span> <span class="n">data_df</span><span class="p">)</span>
+
+<span class="c1"># convert meta information to indices</span>
+<span class="n">full_df</span> <span class="o">=</span> <span class="n">full_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">meta_features</span><span class="p">)</span>
+
+<span class="c1"># checks - check indices match metadata</span>
+<span class="n">meta_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;wmo&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cycle&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;juld&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">]</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Missing features in input data.&quot;</span>
+<span class="k">assert</span> <span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">==</span> <span class="n">meta_features</span><span class="p">,</span> <span class="n">error_msg</span>
+
+<span class="c1"># checks - check column names match feature names</span>
+<span class="n">input_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sla&#39;</span><span class="p">,</span> <span class="s1">&#39;PAR&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_412&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_443&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;RHO_WN_490&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_555&#39;</span><span class="p">,</span> <span class="s1">&#39;RHO_WN_670&#39;</span><span class="p">,</span> <span class="s1">&#39;doy_sin&#39;</span><span class="p">,</span> <span class="s1">&#39;doy_cos&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;y_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;z_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3&#39;</span><span class="p">,</span> <span class="s1">&#39;PC4&#39;</span><span class="p">,</span> <span class="s1">&#39;PC5&#39;</span><span class="p">,</span> <span class="s1">&#39;PC6&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;PC7&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3.1&#39;</span><span class="p">,</span> <span class="s1">&#39;PC1.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC2.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC3.2&#39;</span><span class="p">,</span> <span class="s1">&#39;PC4.1&#39;</span><span class="p">]</span>
+<span class="n">output_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bbp&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.1&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.2&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.3&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.4&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.5&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.6&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.7&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;bbp.8&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.9&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.10&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.11&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.12&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.13&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.14&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;bbp.15&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.16&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.17&#39;</span><span class="p">,</span> <span class="s1">&#39;bbp.18&#39;</span><span class="p">]</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">output_features</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Missing features in input data.&quot;</span>
+<span class="k">assert</span> <span class="n">full_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">==</span> <span class="n">features</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">full_df</span><span class="o">.</span><span class="n">columns</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([&#39;sla&#39;, &#39;PAR&#39;, &#39;RHO_WN_412&#39;, &#39;RHO_WN_443&#39;, &#39;RHO_WN_490&#39;, &#39;RHO_WN_555&#39;,
+       &#39;RHO_WN_670&#39;, &#39;doy_sin&#39;, &#39;doy_cos&#39;, &#39;x_cart&#39;, &#39;y_cart&#39;, &#39;z_cart&#39;, &#39;PC1&#39;,
+       &#39;PC2&#39;, &#39;PC3&#39;, &#39;PC4&#39;, &#39;PC5&#39;, &#39;PC6&#39;, &#39;PC7&#39;, &#39;PC1.1&#39;, &#39;PC2.1&#39;, &#39;PC3.1&#39;,
+       &#39;PC1.2&#39;, &#39;PC2.2&#39;, &#39;PC3.2&#39;, &#39;PC4.1&#39;, &#39;bbp&#39;, &#39;bbp.1&#39;, &#39;bbp.2&#39;, &#39;bbp.3&#39;,
+       &#39;bbp.4&#39;, &#39;bbp.5&#39;, &#39;bbp.6&#39;, &#39;bbp.7&#39;, &#39;bbp.8&#39;, &#39;bbp.9&#39;, &#39;bbp.10&#39;,
+       &#39;bbp.11&#39;, &#39;bbp.12&#39;, &#39;bbp.13&#39;, &#39;bbp.14&#39;, &#39;bbp.15&#39;, &#39;bbp.16&#39;, &#39;bbp.17&#39;,
+       &#39;bbp.18&#39;],
+      dtype=&#39;object&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Dataframe Features:&#39;</span><span class="p">,</span> <span class="n">full_df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">full_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">10</span><span class="p">]</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Dataframe Features: (25413, 45)
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;sla&#39;,
+ &#39;PAR&#39;,
+ &#39;RHO_WN_412&#39;,
+ &#39;RHO_WN_443&#39;,
+ &#39;RHO_WN_490&#39;,
+ &#39;RHO_WN_555&#39;,
+ &#39;RHO_WN_670&#39;,
+ &#39;doy_sin&#39;,
+ &#39;doy_cos&#39;,
+ &#39;x_cart&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Dataframe Indices (meta vars):&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">))</span>
+<span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Dataframe Indices (meta vars): 7
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>FrozenList([&#39;wmo&#39;, &#39;n_cycle&#39;, &#39;N&#39;, &#39;lon&#39;, &#39;lat&#39;, &#39;juld&#39;, &#39;date&#39;])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="2-training-and-test-split">2 - Training and Test Split<a class="headerlink" href="#2-training-and-test-split" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="21-independent-set-i-soca2016">2.1 - Independent Set I (SOCA2016)<a class="headerlink" href="#21-independent-set-i-soca2016" title="Permanent link">&para;</a></h3>
+<p>This independent set has a set number of independent floats which are not counted in the training or validation phase. These floats were in a paper (Sauzede et. al., 2016) and used during the testing phase to showcase how well the models did.</p>
+</div>
+</div>
+<ul>
+<li>6901472</li>
+<li>6901493</li>
+<li>6901523</li>
+<li>6901496</li>
+</ul>
+<p>So we need to take these away from the data.
+</div>
+</div></p>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># soca2016 independent floats</span>
+<span class="n">soca2016_floats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;6901472&quot;</span><span class="p">,</span> <span class="s2">&quot;6901493&quot;</span><span class="p">,</span> <span class="s2">&quot;6901523&quot;</span><span class="p">,</span> <span class="s2">&quot;6901496&quot;</span><span class="p">]</span>
+
+<span class="c1"># subset soca2016 floats</span>
+<span class="n">soca2016_df</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">soca2016_floats</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;wmo&#39;</span><span class="p">)]</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">soca2016_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(378, 45)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="checks">Checks<a class="headerlink" href="#checks" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># check number of samples (meta, inputs)</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">378</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of samples for soca2016 floats: </span><span class="si">{</span><span class="n">soca2016_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">soca2016_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="ana-why-378-rows-if-there-are-4-floats-i-guess-they-are-not-the-same-length-just-to-have-it-clear">Ana: Why 378 rows if there are 4 floats? I guess they are not the same length. Just to have it clear.<a class="headerlink" href="#ana-why-378-rows-if-there-are-4-floats-i-guess-they-are-not-the-same-length-just-to-have-it-clear" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="22-indpendent-set-ii-isprs2020">2.2 - Indpendent Set II (ISPRS2020)<a class="headerlink" href="#22-indpendent-set-ii-isprs2020" title="Permanent link">&para;</a></h3>
+<p>This independent set was a set of floats taken from the ISPRS paper (Sauzede et. al., 2020 (pending...)). These floats were used as the independent testing set to showcase the performance of the ML methods.</p>
+<ul>
+<li>6901486 (North Atlantic?)</li>
+<li>3902121 (Subtropical Gyre?)</li>
+</ul>
+<p>So we need to take these away from the data.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># isprs2020 independent floats</span>
+<span class="n">isprs2020_floats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;6901486&quot;</span><span class="p">,</span> <span class="s2">&quot;3902121&quot;</span><span class="p">]</span>
+
+<span class="c1"># isprs2020 independent floats</span>
+<span class="n">isprs2020_df</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">isprs2020_floats</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;wmo&#39;</span><span class="p">)]</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">isprs2020_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(331, 45)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="checks_1">Checks<a class="headerlink" href="#checks_1" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># check number of samples (meta, inputs)</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">331</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of samples for isprs2016 floats: </span><span class="si">{</span><span class="n">isprs2020_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">isprs2020_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="23-ml-data">2.3 - ML Data<a class="headerlink" href="#23-ml-data" title="Permanent link">&para;</a></h3>
+<p>Now we want to subset the input data to be used for the ML models. Basically, we can subset all datasets that <strong>are not</strong> in the independent floats. In addition, we want all of the variables in the input features that we provided earlier.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># subset non-independent flows</span>
+<span class="n">ml_df</span> <span class="o">=</span> <span class="n">full_df</span><span class="p">[</span><span class="o">~</span><span class="n">full_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">isprs2020_floats</span> <span class="o">+</span> <span class="n">soca2016_floats</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;wmo&#39;</span><span class="p">)]</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">ml_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(24704, 45)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="checks_2">Checks<a class="headerlink" href="#checks_2" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># check number of samples (meta, inputs)</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">24704</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of samples for non-independent floats: </span><span class="si">{</span><span class="n">ml_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">ml_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="24-inputs-outputs">2.4 - Inputs, Outputs<a class="headerlink" href="#24-inputs-outputs" title="Permanent link">&para;</a></h3>
+<p>Lastly, we need to split the data into training, validation (and possibly testing). Recall that all the inputs are already written above and the outputs as well.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">input_df</span> <span class="o">=</span> <span class="n">ml_df</span><span class="p">[</span><span class="n">input_features</span><span class="p">]</span>
+<span class="n">output_df</span> <span class="o">=</span> <span class="n">ml_df</span><span class="p">[</span><span class="n">output_features</span><span class="p">]</span>
+
+<span class="c1"># checks - Input Features</span>
+<span class="n">n_input_features</span> <span class="o">=</span> <span class="mi">26</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of features for input df: </span><span class="si">{</span><span class="n">input_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_input_features</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">input_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_input_features</span><span class="p">,</span> <span class="n">error_msg</span>
+
+<span class="c1"># checks - Output Features</span>
+<span class="n">n_output_features</span> <span class="o">=</span> <span class="mi">19</span>
+<span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Incorrect number of features for output df: </span><span class="si">{</span><span class="n">output_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> =/= </span><span class="si">{</span><span class="n">n_output_features</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">output_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_output_features</span><span class="p">,</span> <span class="n">error_msg</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">input_df</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">output_df</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((24704, 26), (24704, 19))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="3-final-dataset-saving">3. Final Dataset (saving)<a class="headerlink" href="#3-final-dataset-saving" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="31-print-out-data-dimensions-w-metadata">3.1 - Print out data dimensions (w. metadata)<a class="headerlink" href="#31-print-out-data-dimensions-w-metadata" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Input Data:&quot;</span><span class="p">,</span> <span class="n">input_df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output Data:&quot;</span><span class="p">,</span> <span class="n">output_df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SOCA2016 Independent Data:&quot;</span><span class="p">,</span> <span class="n">soca2016_df</span><span class="p">[</span><span class="n">input_features</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">soca2016_df</span><span class="p">[</span><span class="n">output_features</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ISPRS2016 Independent Data:&quot;</span><span class="p">,</span> <span class="n">isprs2020_df</span><span class="p">[</span><span class="n">input_features</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">isprs2020_df</span><span class="p">[</span><span class="n">output_features</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Input Data: (24704, 26)
+Output Data: (24704, 19)
+SOCA2016 Independent Data: (378, 26) (378, 19)
+ISPRS2016 Independent Data: (331, 26) (331, 19)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="32-saving">3.2 - Saving<a class="headerlink" href="#32-saving" title="Permanent link">&para;</a></h3>
+</div>
+</div>
+<ul>
+<li>We're going to save the data in the <code>global/interim/</code> path. This is to prevent any overwrites. </li>
+<li>We also need to <code>index=True</code> for the savefile in order to preserve the metadata indices.
+</div>
+</div></li>
+</ul>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">input_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;inputs.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="33-loading">3.3 - Loading<a class="headerlink" href="#33-loading" title="Permanent link">&para;</a></h3>
+<p>This is a tiny bit tricky if we want to preserve the meta data as the indices. So we need to set the index to be the same meta columns that we used last time via the <code>.set_index(meta_vars)</code> command.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">test_inputs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;inputs.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># add index</span>
+<span class="n">test_inputs_df</span> <span class="o">=</span> <span class="n">test_inputs_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">meta_features</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="questionana-if-we-have-alredy-saved-the-file-couldnt-we-still-use-the-input_df-here-the-one-we-saved-it-is-supposed-not-to-be-modified-right">QUESTION(Ana): if we have alredy saved the file, couldn't we still use the input_df here? The one we saved it is supposed not to be modified , right?<a class="headerlink" href="#questionana-if-we-have-alredy-saved-the-file-couldnt-we-still-use-the-input_df-here-the-one-we-saved-it-is-supposed-not-to-be-modified-right" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="34-checking">3.4 - Checking<a class="headerlink" href="#34-checking" title="Permanent link">&para;</a></h3>
+<p>So curiously, we cannot compare the dataframes directly because there is some numerical error when saving them. But if we calculate the exact differences between them, we find that they are almost equal. See below what happens if we calculate the exact difference between the arrays.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># example are they exactly the same?</span>
+<span class="c1"># np.testing.assert_array_equal(test_inputs_df.describe(), input_df.describe())</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">test_inputs_df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">input_df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AssertionError</span>                            Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-25-41695177b4b4&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># example are they exactly the same?</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># np.testing.assert_array_equal(test_inputs_df.describe(), input_df.describe())</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>np<span class="ansi-blue-fg">.</span>testing<span class="ansi-blue-fg">.</span>assert_array_equal<span class="ansi-blue-fg">(</span>test_inputs_df<span class="ansi-blue-fg">.</span>values<span class="ansi-blue-fg">,</span> input_df<span class="ansi-blue-fg">.</span>values<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/ml4ocn/lib/python3.6/site-packages/numpy/testing/_private/utils.py</span> in <span class="ansi-cyan-fg">assert_array_equal</span><span class="ansi-blue-fg">(x, y, err_msg, verbose)</span>
+<span class="ansi-green-intense-fg ansi-bold">    934</span>     __tracebackhide__ <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>  <span class="ansi-red-fg"># Hide traceback for py.test</span>
+<span class="ansi-green-intense-fg ansi-bold">    935</span>     assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+<span class="ansi-green-fg">--&gt; 936</span><span class="ansi-red-fg">                          verbose=verbose, header=&#39;Arrays are not equal&#39;)
+</span><span class="ansi-green-intense-fg ansi-bold">    937</span> 
+<span class="ansi-green-intense-fg ansi-bold">    938</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/ml4ocn/lib/python3.6/site-packages/numpy/testing/_private/utils.py</span> in <span class="ansi-cyan-fg">assert_array_compare</span><span class="ansi-blue-fg">(comparison, x, y, err_msg, verbose, header, precision, equal_nan, equal_inf)</span>
+<span class="ansi-green-intense-fg ansi-bold">    844</span>                                 verbose<span class="ansi-blue-fg">=</span>verbose<span class="ansi-blue-fg">,</span> header<span class="ansi-blue-fg">=</span>header<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    845</span>                                 names=(&#39;x&#39;, &#39;y&#39;), precision=precision)
+<span class="ansi-green-fg">--&gt; 846</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> AssertionError<span class="ansi-blue-fg">(</span>msg<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    847</span>     <span class="ansi-green-fg">except</span> ValueError<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    848</span>         <span class="ansi-green-fg">import</span> traceback
+
+<span class="ansi-red-fg">AssertionError</span>: 
+Arrays are not equal
+
+Mismatched elements: 96056 / 642304 (15%)
+Max absolute difference: 1.42108547e-14
+Max relative difference: 3.92139227e-16
+ x: array([[-4.704400e+00,  4.265410e+01,  2.546170e-02, ..., -3.458944e+00,
+        -1.017509e-02, -1.025450e+00],
+       [-9.015000e-01,  4.455050e+01,  2.060340e-02, ..., -3.691716e+00,...
+ y: array([[-4.704400e+00,  4.265410e+01,  2.546170e-02, ..., -3.458944e+00,
+        -1.017509e-02, -1.025450e+00],
+       [-9.015000e-01,  4.455050e+01,  2.060340e-02, ..., -3.691716e+00,...</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+We get an assertion error that they're not equal. There is a mismatch difference of order 1e-15 for the absolute and relative differences. That's numerical error probably due to compression that comes when saving and loading data. Let's check again but with a little less expected precision.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">test_inputs_df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">input_df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">decimal</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+so just by reducing the precision by a smidge (1e-14 instead of 1e-15), we find that the arrays are the same. So we can trust it.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="questionanashould-we-save-the-data-specifying-that-precision-already">QUESTION(Ana):Should we save the data specifying that precision already?<a class="headerlink" href="#questionanashould-we-save-the-data-specifying-that-precision-already" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">input_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;inputs_Ana.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.14f</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="35-save-the-rest-of-the-data">3.5 - Save the rest of the data<a class="headerlink" href="#35-save-the-rest-of-the-data" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">input_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;inputs.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">output_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;outputs.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">soca2016_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;soca2016.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">isprs2020_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INTERIM_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;isprs2020.csv&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../1.1_load_processed_data_refactored/" title="1.1 load processed data refactored" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                1.1 load processed data refactored
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../2_ml_algorithms/" title="2 ml algorithms" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                2 ml algorithms
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" /></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2020 ISP-UV
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/IPL-UV" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://twitter.com/isp" target="_blank" rel="noopener" title="twitter.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://isp.uv.es" target="_blank" rel="noopener" title="isp.uv.es" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../../assets/javascripts/vendor.f81b9e8b.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.23546af0.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../assets/javascripts/worker/search.58d22e8e.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../../../javascripts/extra.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+      
+    
+  </body>
+</html>

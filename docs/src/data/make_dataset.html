@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>src.data.make_dataset API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.data.make_dataset</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+import pandas as pd
+import numpy as np
+from typing import Tuple, Optional, List
+from src.visualization.visualize import get_depth_labels
+
+DATA_PATH = &#34;/home/emmanuel/projects/2020_ml_ocn/data/RAW/CONTROL/&#34;
+region1 = &#34;NORTH_ATLANTIC&#34;
+region2 = &#34;SUBTROPICAL_GYRES&#34;
+
+# TODO: more documentation for dataloader
+
+
+class DataLoader:
+    &#34;&#34;&#34;DataLoader for the NA data.
+    
+    Options:
+    --------
+    * region Data
+        - North Atlantic
+        - Subtropical Gyres (STG)
+    
+    Inputs
+    ------
+    * (sla)
+    * (PAR)
+    * ...
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.core_vars = [
+            &#34;sla&#34;,
+            &#34;PAR&#34;,
+            &#34;RHO_WN_412&#34;,
+            &#34;RHO_WN_443&#34;,
+            &#34;RHO_WN_490&#34;,
+            &#34;RHO_WN_555&#34;,
+            &#34;RHO_WN_670&#34;,
+            &#34;MLD&#34;,
+        ]
+        self.valid_floats = {&#34;na&#34;: [6901486, 3902123], &#34;stg&#34;: [6901472, 3902121]}
+
+        self.core_outputs = [&#34;sla&#34;]
+        self.loc_vars = [&#34;lat&#34;, &#34;lon&#34;]
+        self.time_vars = [&#34;doy&#34;]
+        self.meta_vars = [&#34;wmo&#34;, &#34;n_cycle&#34;]
+
+    def load_columns(self, region: str = &#34;na&#34;):
+
+        columns = {}
+
+        # load high dimensional datasets
+        columns[&#34;temperature&#34;] = (
+            self.load_temperature(region, drop_meta=True, training=True)
+            .add_prefix(&#34;temp_&#34;)
+            .columns.values
+        )
+        columns[&#34;density&#34;] = (
+            self.load_density(region, drop_meta=True, training=True)
+            .add_prefix(&#34;dens_&#34;)
+            .columns.values
+        )
+        columns[&#34;salinity&#34;] = (
+            self.load_salinity(region, drop_meta=True, training=True)
+            .add_prefix(&#34;sal_&#34;)
+            .columns.values
+        )
+        columns[&#34;spicy&#34;] = (
+            self.load_spicy(region, drop_meta=True, training=True)
+            .add_prefix(&#34;spice_&#34;)
+            .columns.values
+        )
+        columns[&#34;core&#34;] = self.core_vars
+        columns[&#34;time&#34;] = self.time_vars
+        columns[&#34;location&#34;] = self.loc_vars
+        columns[&#34;argo_float&#34;] = [&#34;wmo&#34;]
+        columns[&#34;argo_time&#34;] = [&#34;n_cycle&#34;]
+
+        return columns
+
+    def load_data(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;This will load the region data:
+        * North Atlantic Region
+        * Subtropical Gyres
+
+        Parameters
+        ----------
+        region : str, {&#39;NA&#39;, &#39;STG&#39;}
+            the region to be extracted
+
+        drop_meta : bool, default=False
+            option to drop the meta data like the `n_cycles` or the 
+            ARGO float number
+        
+        training : bool, default=True
+            option to choose the training dataset or the independently 
+            chosen validation dataset
+        
+        Returns
+        -------
+        df : pd.DataFrame
+            a pandas dataframe containing the dataset
+
+        &#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        # extract data
+        X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/X_INPUT_{filename_ext}.csv&#34;)
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_ouputs(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;This will load the region data:
+        * North Atlantic Region
+        * Subtropical Gyres
+        &#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/BBP_OUTPUT_{filename_ext}.csv&#34;)
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_temperature(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for temperature&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_TEMP_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_density(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for density&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_DENS_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # ren
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_salinity(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for salinity&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_PSAL_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_spicy(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for &#39;spiciness&#39;&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_SPICINESS_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def _get_region_ext(self, region=&#34;na&#34;):
+        # choose region group data
+        if region == &#34;na&#34;:
+            return &#34;NORTH_ATLANTIC&#34;, &#34;NA&#34;
+        elif region == &#34;stg&#34;:
+            return &#34;SUBTROPICAL_GYRES&#34;, &#34;STG&#34;
+        else:
+            raise ValueError(f&#34;Unrecognized region group: {region}&#34;)
+
+    def _drop_meta(self, df: pd.DataFrame, drop_meta: bool = False) -&gt; pd.DataFrame:
+        if drop_meta:
+            return df.drop(self.meta_vars, axis=1)
+        else:
+            return df
+
+    def extract_valid(
+        self,
+        df: pd.DataFrame,
+        region: str = &#34;na&#34;,
+        valid_floats: Optional[List[str]] = None,
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;function to extract the validation dataset from
+        the dataframe. Requires a column called.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            the dataframe with the dataset. Needs the column `wmo`
+            to be able to extract the validation dataset
+
+        region : str, default=&#39;na&#39;
+            the region for the validation floats
+        
+        valid_floats : List[str], default=None
+            the list of validation floats which will override the 
+            validation floats initialized within the DataLoader class.
+        
+        Returns
+        -------
+        df_train : pd.DataFrame
+            the dataframe with the original dataset
+        
+        df_valid : pd.DataFrame
+            the dataframe with the extracted validation floats
+        &#34;&#34;&#34;
+        # override validation floats if given
+        if valid_floats is None:
+            valid_floats = self.valid_floats[region]
+
+        # extract validation floats from
+        df_valid = df[df[&#34;wmo&#34;].isin(valid_floats)]
+
+        # extract the training floats
+        df_train = df[~df[&#34;wmo&#34;].isin(valid_floats)]
+
+        return df_train, df_valid
+
+
+def load_standard_data(region: str = &#34;NA&#34;, training: bool = True):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    # load data
+    X = dataloader.load_data(region, training=training, drop_meta=drop_meta)
+
+    return X
+
+
+def load_high_dim_data(region=&#34;NA&#34;, training: bool = True):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    X_temp = dataloader.load_temperature(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_dens = dataloader.load_density(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_sal = dataloader.load_salinity(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_spicy = dataloader.load_spicy(
+        region=region, training=training, drop_meta=drop_meta
+    )
+
+    return X_temp, X_dens, X_sal, X_spicy
+
+
+def load_labels(region=&#34;NA&#34;, training: bool = True):
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    return dataloader.load_ouputs(region=region, training=training, drop_meta=drop_meta)
+
+
+class ValidationFloats:
+    def __init__(self, region: str = &#34;na&#34;):
+        self.region = region
+        self.valid_floats = {&#34;na&#34;: [6901486, 3902123], &#34;stg&#34;: [6901472, 3902121]}
+        self.meta_vars = [&#34;wmo&#34;, &#34;n_cycle&#34;]
+        self.depths = get_depth_labels()
+
+    def get_validation_floats(self, region: str = &#34;na&#34;):
+        return self.valid_floats[region]
+
+    def _load_labels(self, region: Optional[str] = &#34;na&#34;):
+
+        # get region
+        if region is None:
+            region = self.region
+
+        # Load labels
+        y = load_labels(region, training=False)
+
+        # get meta columns
+        self.meta_columns = y[self.meta_vars]
+
+        columns = y.columns
+        columns = y.columns
+
+        # check that columns match depths
+        assert len(columns[2:]) == len(self.depths)
+
+        # get columns
+        self.columns = np.concatenate((columns[:2].values, self.depths))
+        return y
+
+    def get_validation_res(
+        self,
+        ytest: np.ndarray,
+        ypred: np.ndarray,
+        validation_float: Optional[int] = None,
+        float_num: int = 1,
+    ):
+        # get columns and meta Variables
+        self._load_labels(self.region)
+
+        # create numpy array with metadata columns
+        print(self.meta_columns.values.shape, ypred.shape)
+        ypred = np.concatenate((self.meta_columns.values, ypred), axis=1)
+        ytest = np.concatenate((self.meta_columns.values, ytest), axis=1)
+        print(ypred.min(), ypred.max(), ytest.min(), ytest.max())
+        # create dataframe
+        ypred = pd.DataFrame(ypred, columns=self.columns)
+        ytest = pd.DataFrame(ytest, columns=self.columns)
+
+        # get validation valid_floats
+        if validation_float is None:
+            validation_float = self.valid_floats[self.region][float_num]
+
+        # extract data with floats
+        ypred = ypred[ypred[&#34;wmo&#34;] == validation_float]
+        ytest = ytest[ytest[&#34;wmo&#34;] == validation_float]
+
+        # drop float name columns
+        ypred = ypred.drop([&#34;wmo&#34;], axis=1)
+        ytest = ytest.drop([&#34;wmo&#34;], axis=1)
+
+        # create time series
+        ypred = pd.melt(
+            ypred, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Predictions&#34;
+        )
+        ytest = pd.melt(
+            ytest, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Labels&#34;
+        )
+
+        # merge into time series with depths
+        y = pd.merge(ypred, ytest)
+
+        return y
+
+
+def get_data(params):
+
+    # -------------------------------
+    # Core params
+    # -------------------------------
+
+    # load training data
+    X_core = load_standard_data(params.region, training=True)
+
+    # Testing Data
+    X_core_te = load_standard_data(params.region, training=False)
+    X_core_te = X_core_te.iloc[:, 2:]
+
+    # ----------------------------------
+    # High Dimensional params
+    # ----------------------------------
+    X_temp, X_dens, X_sal, X_spicy = load_high_dim_data(params.region, training=True)
+
+    # add prefix (Training/Validation)
+    X_temp = X_temp.add_prefix(&#34;temp_&#34;)
+    X_dens = X_dens.add_prefix(&#34;dens_&#34;)
+    X_sal = X_sal.add_prefix(&#34;sal_&#34;)
+    X_spicy = X_spicy.add_prefix(&#34;spice_&#34;)
+
+    #
+    X_temp_te, X_dens_te, X_sal_te, X_spicy_te = load_high_dim_data(
+        params.region, training=False
+    )
+
+    # Subset
+    X_temp_te = X_temp_te.iloc[:, 2:]
+    X_dens_te = X_dens_te.iloc[:, 2:]
+    X_sal_te = X_sal_te.iloc[:, 2:]
+    X_spicy_te = X_spicy_te.iloc[:, 2:]
+
+    # add prefix (Test)
+    X_temp_te = X_temp_te.add_prefix(&#34;temp_&#34;)
+    X_dens_te = X_dens_te.add_prefix(&#34;dens_&#34;)
+    X_sal_te = X_sal_te.add_prefix(&#34;sal_&#34;)
+    X_spicy_te = X_spicy_te.add_prefix(&#34;spice_&#34;)
+
+    # --------------------------------------------
+    # Load Labels
+    # --------------------------------------------
+    ytr = load_labels(params.region, training=True)
+
+    yte = load_labels(params.region, training=False)
+
+    yte = yte.iloc[:, 2:]
+
+    # Concatenate Data
+    # Training Data
+    Xtr = pd.concat([X_core, X_temp, X_dens, X_sal, X_spicy], axis=1)
+
+    # Testing Data
+    Xte = pd.concat([X_core_te, X_temp_te, X_dens_te, X_sal_te, X_spicy_te], axis=1)
+
+    dataset = {&#34;Xtrain&#34;: Xtr, &#34;Xtest&#34;: Xte, &#34;ytrain&#34;: ytr, &#34;ytest&#34;: yte}
+    return dataset</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.data.make_dataset.get_data"><code class="name flex">
+<span>def <span class="ident">get_data</span></span>(<span>params)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_data(params):
+
+    # -------------------------------
+    # Core params
+    # -------------------------------
+
+    # load training data
+    X_core = load_standard_data(params.region, training=True)
+
+    # Testing Data
+    X_core_te = load_standard_data(params.region, training=False)
+    X_core_te = X_core_te.iloc[:, 2:]
+
+    # ----------------------------------
+    # High Dimensional params
+    # ----------------------------------
+    X_temp, X_dens, X_sal, X_spicy = load_high_dim_data(params.region, training=True)
+
+    # add prefix (Training/Validation)
+    X_temp = X_temp.add_prefix(&#34;temp_&#34;)
+    X_dens = X_dens.add_prefix(&#34;dens_&#34;)
+    X_sal = X_sal.add_prefix(&#34;sal_&#34;)
+    X_spicy = X_spicy.add_prefix(&#34;spice_&#34;)
+
+    #
+    X_temp_te, X_dens_te, X_sal_te, X_spicy_te = load_high_dim_data(
+        params.region, training=False
+    )
+
+    # Subset
+    X_temp_te = X_temp_te.iloc[:, 2:]
+    X_dens_te = X_dens_te.iloc[:, 2:]
+    X_sal_te = X_sal_te.iloc[:, 2:]
+    X_spicy_te = X_spicy_te.iloc[:, 2:]
+
+    # add prefix (Test)
+    X_temp_te = X_temp_te.add_prefix(&#34;temp_&#34;)
+    X_dens_te = X_dens_te.add_prefix(&#34;dens_&#34;)
+    X_sal_te = X_sal_te.add_prefix(&#34;sal_&#34;)
+    X_spicy_te = X_spicy_te.add_prefix(&#34;spice_&#34;)
+
+    # --------------------------------------------
+    # Load Labels
+    # --------------------------------------------
+    ytr = load_labels(params.region, training=True)
+
+    yte = load_labels(params.region, training=False)
+
+    yte = yte.iloc[:, 2:]
+
+    # Concatenate Data
+    # Training Data
+    Xtr = pd.concat([X_core, X_temp, X_dens, X_sal, X_spicy], axis=1)
+
+    # Testing Data
+    Xte = pd.concat([X_core_te, X_temp_te, X_dens_te, X_sal_te, X_spicy_te], axis=1)
+
+    dataset = {&#34;Xtrain&#34;: Xtr, &#34;Xtest&#34;: Xte, &#34;ytrain&#34;: ytr, &#34;ytest&#34;: yte}
+    return dataset</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.load_high_dim_data"><code class="name flex">
+<span>def <span class="ident">load_high_dim_data</span></span>(<span>region='NA', training: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_high_dim_data(region=&#34;NA&#34;, training: bool = True):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    X_temp = dataloader.load_temperature(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_dens = dataloader.load_density(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_sal = dataloader.load_salinity(
+        region=region, training=training, drop_meta=drop_meta
+    )
+    X_spicy = dataloader.load_spicy(
+        region=region, training=training, drop_meta=drop_meta
+    )
+
+    return X_temp, X_dens, X_sal, X_spicy</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.load_labels"><code class="name flex">
+<span>def <span class="ident">load_labels</span></span>(<span>region='NA', training: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_labels(region=&#34;NA&#34;, training: bool = True):
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    return dataloader.load_ouputs(region=region, training=training, drop_meta=drop_meta)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.load_standard_data"><code class="name flex">
+<span>def <span class="ident">load_standard_data</span></span>(<span>region: str = 'NA', training: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_standard_data(region: str = &#34;NA&#34;, training: bool = True):
+
+    # initialize dataloader
+    dataloader = DataLoader()
+
+    if training == True:
+        drop_meta = True
+    else:
+        drop_meta = False
+
+    # load data
+    X = dataloader.load_data(region, training=training, drop_meta=drop_meta)
+
+    return X</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.data.make_dataset.DataLoader"><code class="flex name class">
+<span>class <span class="ident">DataLoader</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>DataLoader for the NA data.</p>
+<h2 id="options">Options:</h2>
+<ul>
+<li>region Data<ul>
+<li>North Atlantic</li>
+<li>Subtropical Gyres (STG)</li>
+</ul>
+</li>
+</ul>
+<h2 id="inputs">Inputs</h2>
+<ul>
+<li>(sla)</li>
+<li>(PAR)</li>
+<li>&hellip;</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DataLoader:
+    &#34;&#34;&#34;DataLoader for the NA data.
+    
+    Options:
+    --------
+    * region Data
+        - North Atlantic
+        - Subtropical Gyres (STG)
+    
+    Inputs
+    ------
+    * (sla)
+    * (PAR)
+    * ...
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.core_vars = [
+            &#34;sla&#34;,
+            &#34;PAR&#34;,
+            &#34;RHO_WN_412&#34;,
+            &#34;RHO_WN_443&#34;,
+            &#34;RHO_WN_490&#34;,
+            &#34;RHO_WN_555&#34;,
+            &#34;RHO_WN_670&#34;,
+            &#34;MLD&#34;,
+        ]
+        self.valid_floats = {&#34;na&#34;: [6901486, 3902123], &#34;stg&#34;: [6901472, 3902121]}
+
+        self.core_outputs = [&#34;sla&#34;]
+        self.loc_vars = [&#34;lat&#34;, &#34;lon&#34;]
+        self.time_vars = [&#34;doy&#34;]
+        self.meta_vars = [&#34;wmo&#34;, &#34;n_cycle&#34;]
+
+    def load_columns(self, region: str = &#34;na&#34;):
+
+        columns = {}
+
+        # load high dimensional datasets
+        columns[&#34;temperature&#34;] = (
+            self.load_temperature(region, drop_meta=True, training=True)
+            .add_prefix(&#34;temp_&#34;)
+            .columns.values
+        )
+        columns[&#34;density&#34;] = (
+            self.load_density(region, drop_meta=True, training=True)
+            .add_prefix(&#34;dens_&#34;)
+            .columns.values
+        )
+        columns[&#34;salinity&#34;] = (
+            self.load_salinity(region, drop_meta=True, training=True)
+            .add_prefix(&#34;sal_&#34;)
+            .columns.values
+        )
+        columns[&#34;spicy&#34;] = (
+            self.load_spicy(region, drop_meta=True, training=True)
+            .add_prefix(&#34;spice_&#34;)
+            .columns.values
+        )
+        columns[&#34;core&#34;] = self.core_vars
+        columns[&#34;time&#34;] = self.time_vars
+        columns[&#34;location&#34;] = self.loc_vars
+        columns[&#34;argo_float&#34;] = [&#34;wmo&#34;]
+        columns[&#34;argo_time&#34;] = [&#34;n_cycle&#34;]
+
+        return columns
+
+    def load_data(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;This will load the region data:
+        * North Atlantic Region
+        * Subtropical Gyres
+
+        Parameters
+        ----------
+        region : str, {&#39;NA&#39;, &#39;STG&#39;}
+            the region to be extracted
+
+        drop_meta : bool, default=False
+            option to drop the meta data like the `n_cycles` or the 
+            ARGO float number
+        
+        training : bool, default=True
+            option to choose the training dataset or the independently 
+            chosen validation dataset
+        
+        Returns
+        -------
+        df : pd.DataFrame
+            a pandas dataframe containing the dataset
+
+        &#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        # extract data
+        X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/X_INPUT_{filename_ext}.csv&#34;)
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_ouputs(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;This will load the region data:
+        * North Atlantic Region
+        * Subtropical Gyres
+        &#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/BBP_OUTPUT_{filename_ext}.csv&#34;)
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_temperature(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for temperature&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_TEMP_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_density(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for density&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_DENS_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # ren
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_salinity(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for salinity&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_PSAL_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def load_spicy(
+        self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+    ) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;This loads the region data for &#39;spiciness&#39;&#34;&#34;&#34;
+        # choose region group data
+        region_name, filename_ext = self._get_region_ext(region.lower())
+
+        X = pd.read_csv(
+            f&#34;{DATA_PATH}{region_name}/MATRIX_SPICINESS_{filename_ext}.txt&#34;,
+            sep=&#34; &#34;,
+            header=None,
+        )
+        X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+        # extract training/validation dataset
+        X_tr, X_val = self.extract_valid(
+            X, region=region, valid_floats=self.valid_floats[region.lower()]
+        )
+
+        # drop metadata
+        X_tr = self._drop_meta(X_tr, drop_meta)
+        X_val = self._drop_meta(X_val, drop_meta)
+
+        if training == True:
+            return X_tr
+        elif training == False:
+            return X_val
+        else:
+            raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)
+
+    def _get_region_ext(self, region=&#34;na&#34;):
+        # choose region group data
+        if region == &#34;na&#34;:
+            return &#34;NORTH_ATLANTIC&#34;, &#34;NA&#34;
+        elif region == &#34;stg&#34;:
+            return &#34;SUBTROPICAL_GYRES&#34;, &#34;STG&#34;
+        else:
+            raise ValueError(f&#34;Unrecognized region group: {region}&#34;)
+
+    def _drop_meta(self, df: pd.DataFrame, drop_meta: bool = False) -&gt; pd.DataFrame:
+        if drop_meta:
+            return df.drop(self.meta_vars, axis=1)
+        else:
+            return df
+
+    def extract_valid(
+        self,
+        df: pd.DataFrame,
+        region: str = &#34;na&#34;,
+        valid_floats: Optional[List[str]] = None,
+    ) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+        &#34;&#34;&#34;function to extract the validation dataset from
+        the dataframe. Requires a column called.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            the dataframe with the dataset. Needs the column `wmo`
+            to be able to extract the validation dataset
+
+        region : str, default=&#39;na&#39;
+            the region for the validation floats
+        
+        valid_floats : List[str], default=None
+            the list of validation floats which will override the 
+            validation floats initialized within the DataLoader class.
+        
+        Returns
+        -------
+        df_train : pd.DataFrame
+            the dataframe with the original dataset
+        
+        df_valid : pd.DataFrame
+            the dataframe with the extracted validation floats
+        &#34;&#34;&#34;
+        # override validation floats if given
+        if valid_floats is None:
+            valid_floats = self.valid_floats[region]
+
+        # extract validation floats from
+        df_valid = df[df[&#34;wmo&#34;].isin(valid_floats)]
+
+        # extract the training floats
+        df_train = df[~df[&#34;wmo&#34;].isin(valid_floats)]
+
+        return df_train, df_valid</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="src.data.make_dataset.DataLoader.extract_valid"><code class="name flex">
+<span>def <span class="ident">extract_valid</span></span>(<span>self, df: pandas.core.frame.DataFrame, region: str = 'na', valid_floats: Union[List[str], NoneType] = None) -> Tuple[pandas.core.frame.DataFrame, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>function to extract the validation dataset from
+the dataframe. Requires a column called.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>the dataframe with the dataset. Needs the column <code>wmo</code>
+to be able to extract the validation dataset</dd>
+<dt><strong><code>region</code></strong> :&ensp;<code>str</code>, default=<code>'na'</code></dt>
+<dd>the region for the validation floats</dd>
+<dt><strong><code>valid_floats</code></strong> :&ensp;<code>List[str]</code>, default=<code>None</code></dt>
+<dd>the list of validation floats which will override the
+validation floats initialized within the DataLoader class.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>df_train</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>the dataframe with the original dataset</dd>
+<dt><strong><code>df_valid</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>the dataframe with the extracted validation floats</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_valid(
+    self,
+    df: pd.DataFrame,
+    region: str = &#34;na&#34;,
+    valid_floats: Optional[List[str]] = None,
+) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+    &#34;&#34;&#34;function to extract the validation dataset from
+    the dataframe. Requires a column called.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        the dataframe with the dataset. Needs the column `wmo`
+        to be able to extract the validation dataset
+
+    region : str, default=&#39;na&#39;
+        the region for the validation floats
+    
+    valid_floats : List[str], default=None
+        the list of validation floats which will override the 
+        validation floats initialized within the DataLoader class.
+    
+    Returns
+    -------
+    df_train : pd.DataFrame
+        the dataframe with the original dataset
+    
+    df_valid : pd.DataFrame
+        the dataframe with the extracted validation floats
+    &#34;&#34;&#34;
+    # override validation floats if given
+    if valid_floats is None:
+        valid_floats = self.valid_floats[region]
+
+    # extract validation floats from
+    df_valid = df[df[&#34;wmo&#34;].isin(valid_floats)]
+
+    # extract the training floats
+    df_train = df[~df[&#34;wmo&#34;].isin(valid_floats)]
+
+    return df_train, df_valid</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_columns"><code class="name flex">
+<span>def <span class="ident">load_columns</span></span>(<span>self, region: str = 'na')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_columns(self, region: str = &#34;na&#34;):
+
+    columns = {}
+
+    # load high dimensional datasets
+    columns[&#34;temperature&#34;] = (
+        self.load_temperature(region, drop_meta=True, training=True)
+        .add_prefix(&#34;temp_&#34;)
+        .columns.values
+    )
+    columns[&#34;density&#34;] = (
+        self.load_density(region, drop_meta=True, training=True)
+        .add_prefix(&#34;dens_&#34;)
+        .columns.values
+    )
+    columns[&#34;salinity&#34;] = (
+        self.load_salinity(region, drop_meta=True, training=True)
+        .add_prefix(&#34;sal_&#34;)
+        .columns.values
+    )
+    columns[&#34;spicy&#34;] = (
+        self.load_spicy(region, drop_meta=True, training=True)
+        .add_prefix(&#34;spice_&#34;)
+        .columns.values
+    )
+    columns[&#34;core&#34;] = self.core_vars
+    columns[&#34;time&#34;] = self.time_vars
+    columns[&#34;location&#34;] = self.loc_vars
+    columns[&#34;argo_float&#34;] = [&#34;wmo&#34;]
+    columns[&#34;argo_time&#34;] = [&#34;n_cycle&#34;]
+
+    return columns</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_data"><code class="name flex">
+<span>def <span class="ident">load_data</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> Tuple[pandas.core.frame.DataFrame, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This will load the region data:
+* North Atlantic Region
+* Subtropical Gyres</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>region</code></strong> :&ensp;<code>str, {'NA', 'STG'}</code></dt>
+<dd>the region to be extracted</dd>
+<dt><strong><code>drop_meta</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>option to drop the meta data like the <code>n_cycles</code> or the
+ARGO float number</dd>
+<dt><strong><code>training</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>option to choose the training dataset or the independently
+chosen validation dataset</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>a pandas dataframe containing the dataset</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_data(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+    &#34;&#34;&#34;This will load the region data:
+    * North Atlantic Region
+    * Subtropical Gyres
+
+    Parameters
+    ----------
+    region : str, {&#39;NA&#39;, &#39;STG&#39;}
+        the region to be extracted
+
+    drop_meta : bool, default=False
+        option to drop the meta data like the `n_cycles` or the 
+        ARGO float number
+    
+    training : bool, default=True
+        option to choose the training dataset or the independently 
+        chosen validation dataset
+    
+    Returns
+    -------
+    df : pd.DataFrame
+        a pandas dataframe containing the dataset
+
+    &#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+
+    # extract data
+    X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/X_INPUT_{filename_ext}.csv&#34;)
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_density"><code class="name flex">
+<span>def <span class="ident">load_density</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This loads the region data for density</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_density(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;This loads the region data for density&#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+
+    X = pd.read_csv(
+        f&#34;{DATA_PATH}{region_name}/MATRIX_DENS_{filename_ext}.txt&#34;,
+        sep=&#34; &#34;,
+        header=None,
+    )
+    X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+    # ren
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_ouputs"><code class="name flex">
+<span>def <span class="ident">load_ouputs</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> Tuple[pandas.core.frame.DataFrame, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This will load the region data:
+* North Atlantic Region
+* Subtropical Gyres</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_ouputs(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; Tuple[pd.DataFrame, pd.DataFrame]:
+    &#34;&#34;&#34;This will load the region data:
+    * North Atlantic Region
+    * Subtropical Gyres
+    &#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+
+    X = pd.read_csv(f&#34;{DATA_PATH}{region_name}/BBP_OUTPUT_{filename_ext}.csv&#34;)
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_salinity"><code class="name flex">
+<span>def <span class="ident">load_salinity</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This loads the region data for salinity</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_salinity(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;This loads the region data for salinity&#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+
+    X = pd.read_csv(
+        f&#34;{DATA_PATH}{region_name}/MATRIX_PSAL_{filename_ext}.txt&#34;,
+        sep=&#34; &#34;,
+        header=None,
+    )
+    X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_spicy"><code class="name flex">
+<span>def <span class="ident">load_spicy</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This loads the region data for 'spiciness'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_spicy(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;This loads the region data for &#39;spiciness&#39;&#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+
+    X = pd.read_csv(
+        f&#34;{DATA_PATH}{region_name}/MATRIX_SPICINESS_{filename_ext}.txt&#34;,
+        sep=&#34; &#34;,
+        header=None,
+    )
+    X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.DataLoader.load_temperature"><code class="name flex">
+<span>def <span class="ident">load_temperature</span></span>(<span>self, region: str = 'na', drop_meta: bool = False, training: bool = True) -> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This loads the region data for temperature</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_temperature(
+    self, region: str = &#34;na&#34;, drop_meta: bool = False, training: bool = True
+) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;This loads the region data for temperature&#34;&#34;&#34;
+    # choose region group data
+    region_name, filename_ext = self._get_region_ext(region.lower())
+    X = pd.read_csv(
+        f&#34;{DATA_PATH}{region_name}/MATRIX_TEMP_{filename_ext}.txt&#34;,
+        sep=&#34; &#34;,
+        header=None,
+    )
+    X = X.rename(columns={0: &#34;wmo&#34;, 1: &#34;n_cycle&#34;})
+
+    # extract training/validation dataset
+    X_tr, X_val = self.extract_valid(
+        X, region=region, valid_floats=self.valid_floats[region.lower()]
+    )
+
+    # drop metadata
+    X_tr = self._drop_meta(X_tr, drop_meta)
+    X_val = self._drop_meta(X_val, drop_meta)
+
+    if training == True:
+        return X_tr
+    elif training == False:
+        return X_val
+    else:
+        raise ValueError(f&#34;Unrecognized boolean entry for &#39;training&#39;: {training}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="src.data.make_dataset.ValidationFloats"><code class="flex name class">
+<span>class <span class="ident">ValidationFloats</span></span>
+<span>(</span><span>region: str = 'na')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ValidationFloats:
+    def __init__(self, region: str = &#34;na&#34;):
+        self.region = region
+        self.valid_floats = {&#34;na&#34;: [6901486, 3902123], &#34;stg&#34;: [6901472, 3902121]}
+        self.meta_vars = [&#34;wmo&#34;, &#34;n_cycle&#34;]
+        self.depths = get_depth_labels()
+
+    def get_validation_floats(self, region: str = &#34;na&#34;):
+        return self.valid_floats[region]
+
+    def _load_labels(self, region: Optional[str] = &#34;na&#34;):
+
+        # get region
+        if region is None:
+            region = self.region
+
+        # Load labels
+        y = load_labels(region, training=False)
+
+        # get meta columns
+        self.meta_columns = y[self.meta_vars]
+
+        columns = y.columns
+        columns = y.columns
+
+        # check that columns match depths
+        assert len(columns[2:]) == len(self.depths)
+
+        # get columns
+        self.columns = np.concatenate((columns[:2].values, self.depths))
+        return y
+
+    def get_validation_res(
+        self,
+        ytest: np.ndarray,
+        ypred: np.ndarray,
+        validation_float: Optional[int] = None,
+        float_num: int = 1,
+    ):
+        # get columns and meta Variables
+        self._load_labels(self.region)
+
+        # create numpy array with metadata columns
+        print(self.meta_columns.values.shape, ypred.shape)
+        ypred = np.concatenate((self.meta_columns.values, ypred), axis=1)
+        ytest = np.concatenate((self.meta_columns.values, ytest), axis=1)
+        print(ypred.min(), ypred.max(), ytest.min(), ytest.max())
+        # create dataframe
+        ypred = pd.DataFrame(ypred, columns=self.columns)
+        ytest = pd.DataFrame(ytest, columns=self.columns)
+
+        # get validation valid_floats
+        if validation_float is None:
+            validation_float = self.valid_floats[self.region][float_num]
+
+        # extract data with floats
+        ypred = ypred[ypred[&#34;wmo&#34;] == validation_float]
+        ytest = ytest[ytest[&#34;wmo&#34;] == validation_float]
+
+        # drop float name columns
+        ypred = ypred.drop([&#34;wmo&#34;], axis=1)
+        ytest = ytest.drop([&#34;wmo&#34;], axis=1)
+
+        # create time series
+        ypred = pd.melt(
+            ypred, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Predictions&#34;
+        )
+        ytest = pd.melt(
+            ytest, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Labels&#34;
+        )
+
+        # merge into time series with depths
+        y = pd.merge(ypred, ytest)
+
+        return y</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="src.data.make_dataset.ValidationFloats.get_validation_floats"><code class="name flex">
+<span>def <span class="ident">get_validation_floats</span></span>(<span>self, region: str = 'na')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_validation_floats(self, region: str = &#34;na&#34;):
+    return self.valid_floats[region]</code></pre>
+</details>
+</dd>
+<dt id="src.data.make_dataset.ValidationFloats.get_validation_res"><code class="name flex">
+<span>def <span class="ident">get_validation_res</span></span>(<span>self, ytest: numpy.ndarray, ypred: numpy.ndarray, validation_float: Union[int, NoneType] = None, float_num: int = 1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_validation_res(
+    self,
+    ytest: np.ndarray,
+    ypred: np.ndarray,
+    validation_float: Optional[int] = None,
+    float_num: int = 1,
+):
+    # get columns and meta Variables
+    self._load_labels(self.region)
+
+    # create numpy array with metadata columns
+    print(self.meta_columns.values.shape, ypred.shape)
+    ypred = np.concatenate((self.meta_columns.values, ypred), axis=1)
+    ytest = np.concatenate((self.meta_columns.values, ytest), axis=1)
+    print(ypred.min(), ypred.max(), ytest.min(), ytest.max())
+    # create dataframe
+    ypred = pd.DataFrame(ypred, columns=self.columns)
+    ytest = pd.DataFrame(ytest, columns=self.columns)
+
+    # get validation valid_floats
+    if validation_float is None:
+        validation_float = self.valid_floats[self.region][float_num]
+
+    # extract data with floats
+    ypred = ypred[ypred[&#34;wmo&#34;] == validation_float]
+    ytest = ytest[ytest[&#34;wmo&#34;] == validation_float]
+
+    # drop float name columns
+    ypred = ypred.drop([&#34;wmo&#34;], axis=1)
+    ytest = ytest.drop([&#34;wmo&#34;], axis=1)
+
+    # create time series
+    ypred = pd.melt(
+        ypred, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Predictions&#34;
+    )
+    ytest = pd.melt(
+        ytest, id_vars=[&#34;n_cycle&#34;], var_name=&#34;Depth&#34;, value_name=&#34;Labels&#34;
+    )
+
+    # merge into time series with depths
+    y = pd.merge(ypred, ytest)
+
+    return y</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.data" href="index.html">src.data</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.data.make_dataset.get_data" href="#src.data.make_dataset.get_data">get_data</a></code></li>
+<li><code><a title="src.data.make_dataset.load_high_dim_data" href="#src.data.make_dataset.load_high_dim_data">load_high_dim_data</a></code></li>
+<li><code><a title="src.data.make_dataset.load_labels" href="#src.data.make_dataset.load_labels">load_labels</a></code></li>
+<li><code><a title="src.data.make_dataset.load_standard_data" href="#src.data.make_dataset.load_standard_data">load_standard_data</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.data.make_dataset.DataLoader" href="#src.data.make_dataset.DataLoader">DataLoader</a></code></h4>
+<ul class="two-column">
+<li><code><a title="src.data.make_dataset.DataLoader.extract_valid" href="#src.data.make_dataset.DataLoader.extract_valid">extract_valid</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_columns" href="#src.data.make_dataset.DataLoader.load_columns">load_columns</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_data" href="#src.data.make_dataset.DataLoader.load_data">load_data</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_density" href="#src.data.make_dataset.DataLoader.load_density">load_density</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_ouputs" href="#src.data.make_dataset.DataLoader.load_ouputs">load_ouputs</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_salinity" href="#src.data.make_dataset.DataLoader.load_salinity">load_salinity</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_spicy" href="#src.data.make_dataset.DataLoader.load_spicy">load_spicy</a></code></li>
+<li><code><a title="src.data.make_dataset.DataLoader.load_temperature" href="#src.data.make_dataset.DataLoader.load_temperature">load_temperature</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.data.make_dataset.ValidationFloats" href="#src.data.make_dataset.ValidationFloats">ValidationFloats</a></code></h4>
+<ul class="">
+<li><code><a title="src.data.make_dataset.ValidationFloats.get_validation_floats" href="#src.data.make_dataset.ValidationFloats.get_validation_floats">get_validation_floats</a></code></li>
+<li><code><a title="src.data.make_dataset.ValidationFloats.get_validation_res" href="#src.data.make_dataset.ValidationFloats.get_validation_res">get_validation_res</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

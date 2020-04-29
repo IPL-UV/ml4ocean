@@ -1,0 +1,1760 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="ML 4 Ocean Applications">
+      
+      
+        <link rel="canonical" href="https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/1_multitask_vs_multioutput/">
+      
+      
+        <meta name="author" content="J. Emmanuel Johnson">
+      
+      <link rel="shortcut icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.3">
+    
+    
+      
+        <title>1 multitask vs multioutput - ML 4 Ocean Applications</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.62d34fff.min.css">
+      
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.c8acc6db.min.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#2196f3">
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=source+code+pro:300,400,400i,700%7Csource+code+pro&display=fallback">
+        <style>body,input{font-family:"source code pro",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"source code pro",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../../../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#multi-task-vs-multi-output" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-header-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            ML 4 Ocean Applications
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              1 multitask vs multioutput
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    ML 4 Ocean Applications
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../.." title="Overview" class="md-nav__link">
+      Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../../APIREADME/" title="API Documentation" class="md-nav__link">
+      API Documentation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../../ideas/" title="Ideas" class="md-nav__link">
+      Ideas
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Notebooks
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-1" type="checkbox" id="nav-4-1">
+    
+    <label class="md-nav__link" for="nav-4-1">
+      Global data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Global data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-1">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Global data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/1.1_load_processed_data_refactored/" title="1.1 load processed data refactored" class="md-nav__link">
+      1.1 load processed data refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/1_load_processed_data/" title="1 load processed data" class="md-nav__link">
+      1 load processed data
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/2_ml_algorithms/" title="2 ml algorithms" class="md-nav__link">
+      2 ml algorithms
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/3_visualization/" title="3 visualization" class="md-nav__link">
+      3 visualization
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" type="checkbox" id="nav-4-2" checked>
+    
+    <label class="md-nav__link" for="nav-4-2">
+      Na data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Na data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Na data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../trial1_gps/" title="Trial1 gps" class="md-nav__link">
+      Trial1 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../trial2_gps/" title="Trial2 gps" class="md-nav__link">
+      Trial2 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-3" type="checkbox" id="nav-4-2-3">
+    
+    <label class="md-nav__link" for="nav-4-2-3">
+      1 data analysis
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="1 data analysis" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        1 data analysis
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/1_analysis_control/" title="1 analysis control" class="md-nav__link">
+      1 analysis control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/scaling/" title="Scaling" class="md-nav__link">
+      Scaling
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-4" type="checkbox" id="nav-4-2-4">
+    
+    <label class="md-nav__link" for="nav-4-2-4">
+      2 preprocessing
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="2 preprocessing" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        2 preprocessing
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/0_preproc_control/" title="0 preproc control" class="md-nav__link">
+      0 preproc control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/0_preproc_control_outputs/" title="0 preproc control outputs" class="md-nav__link">
+      0 preproc control outputs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5" type="checkbox" id="nav-4-2-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5">
+      3 models
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="3 models" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        3 models
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/0_baseline_control/" title="0 baseline control" class="md-nav__link">
+      0 baseline control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/1_control_baseline/" title="1 control baseline" class="md-nav__link">
+      1 control baseline
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/1_control_output_transform/" title="1 control output transform" class="md-nav__link">
+      1 control output transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/revisit/" title="Revisit" class="md-nav__link">
+      Revisit
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-5" type="checkbox" id="nav-4-2-5-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5-5">
+      Custom gpflow
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom gpflow" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom gpflow
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/gpflow_demo/" title="Gpflow demo" class="md-nav__link">
+      Gpflow demo
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/multitask_svgp/" title="Multitask svgp" class="md-nav__link">
+      Multitask svgp
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/svgp/" title="Svgp" class="md-nav__link">
+      Svgp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-6" type="checkbox" id="nav-4-2-5-6">
+    
+    <label class="md-nav__link" for="nav-4-2-5-6">
+      Custom sklearn
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom sklearn" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom sklearn
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_sklearn/1_multitask_vs_multioutput/" title="1 multitask vs multioutput" class="md-nav__link">
+      1 multitask vs multioutput
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-6" type="checkbox" id="nav-4-2-6">
+    
+    <label class="md-nav__link" for="nav-4-2-6">
+      4 pipeline
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="4 pipeline" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        4 pipeline
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/0.0_full_walkthrough/" title="0.0 full walkthrough" class="md-nav__link">
+      0.0 full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/2.0_experiment_refactored/" title="2.0 experiment refactored" class="md-nav__link">
+      2.0 experiment refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/3.0_results/" title="3.0 results" class="md-nav__link">
+      3.0 results
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/4.0_validation/" title="4.0 validation" class="md-nav__link">
+      4.0 validation
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-7" type="checkbox" id="nav-4-2-7">
+    
+    <label class="md-nav__link" for="nav-4-2-7">
+      5 plots
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="5 plots" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-7">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        5 plots
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../5_plots/figures_mlsp/" title="Figures mlsp" class="md-nav__link">
+      Figures mlsp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-8" type="checkbox" id="nav-4-2-8" checked>
+    
+    <label class="md-nav__link" for="nav-4-2-8">
+      Demos
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Demos" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-8">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Demos
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../0_loading_data/" title="0 loading data" class="md-nav__link">
+      0 loading data
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        1 multitask vs multioutput
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13Z" /></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="1 multitask vs multioutput" class="md-nav__link md-nav__link--active">
+      1 multitask vs multioutput
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-i-linear-regression" class="md-nav__link">
+    Algorithm I - Linear Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm I - Linear Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-i-multioutput-linear-regression" class="md-nav__link">
+    Test I - MultiOutput Linear Regression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-ii-multitask-linear-regression" class="md-nav__link">
+    Test II - MultiTask Linear Regression
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-ii-gaussian-process-regression" class="md-nav__link">
+    Algorithm II - Gaussian Process Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm II - Gaussian Process Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multioutput" class="md-nav__link">
+    MultiOutput
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-iii-bayesian-ridge-regression" class="md-nav__link">
+    Algorithm III - Bayesian Ridge Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm III - Bayesian Ridge Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multi-task" class="md-nav__link">
+    Multi-Task
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../2_pca_transform/" title="2 pca transform" class="md-nav__link">
+      2 pca transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../3_confidence_intervals/" title="3 confidence intervals" class="md-nav__link">
+      3 confidence intervals
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../Untitled/" title="Untitled" class="md-nav__link">
+      Untitled
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_gp_example/" title="Full gp example" class="md-nav__link">
+      Full gp example
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_walkthrough-Copy1/" title="full walkthrough Copy1" class="md-nav__link">
+      full walkthrough Copy1
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_walkthrough/" title="Full walkthrough" class="md-nav__link">
+      Full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../meta_info/" title="Meta info" class="md-nav__link">
+      Meta info
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../sparse_gps/" title="Sparse gps" class="md-nav__link">
+      Sparse gps
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-i-linear-regression" class="md-nav__link">
+    Algorithm I - Linear Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm I - Linear Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-i-multioutput-linear-regression" class="md-nav__link">
+    Test I - MultiOutput Linear Regression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-ii-multitask-linear-regression" class="md-nav__link">
+    Test II - MultiTask Linear Regression
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-ii-gaussian-process-regression" class="md-nav__link">
+    Algorithm II - Gaussian Process Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm II - Gaussian Process Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multioutput" class="md-nav__link">
+    MultiOutput
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-iii-bayesian-ridge-regression" class="md-nav__link">
+    Algorithm III - Bayesian Ridge Regression
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm III - Bayesian Ridge Regression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multi-task" class="md-nav__link">
+    Multi-Task
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/IPL-UV/ml4ocean/edit/master/docs/notebooks/na_data/demos/1_multitask_vs_multioutput.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h1 id="multi-task-vs-multi-output">Multi-Task vs. Multi-Output<a class="headerlink" href="#multi-task-vs-multi-output" title="Permanent link">&para;</a></h1>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In this notebook, we will be looking at the difference between multitask and multioutput. In a nutshell, multioutput is when we have a <strong>single function</strong> that is able to return the multidimensional vector of labels and multitask is when we have a <strong>function for each output</strong> of the multidimensional vector of labels. There are pros and cons to each of these methods so it's up to the expert to give the data scientists some reasons as to why one would choose one over the other.</p>
+<p>Let's define some terms: we have some dataset <span><span class="MathJax_Preview">\mathcal{D}=\{X,Y\}</span><script type="math/tex">\mathcal{D}=\{X,Y\}</script></span> of pairs of input <span><span class="MathJax_Preview">X \in \mathbb{R}^{N\times D}</span><script type="math/tex">X \in \mathbb{R}^{N\times D}</script></span> and ouputs <span><span class="MathJax_Preview">Y \in \mathbb{R}^{N \times O}</span><script type="math/tex">Y \in \mathbb{R}^{N \times O}</script></span>. Here <span><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> is the number of samples, <span><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> is the number of features/dimensions and <span><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> are the number of outputs (or tasks).
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">BayesianRidge</span>
+<span class="kn">from</span> <span class="nn">sklearn.gaussian_process</span> <span class="kn">import</span> <span class="n">GaussianProcessRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.gaussian_process.kernels</span> <span class="kn">import</span> <span class="n">WhiteKernel</span><span class="p">,</span> <span class="n">ConstantKernel</span><span class="p">,</span> <span class="n">RBF</span>
+<span class="kn">from</span> <span class="nn">sklearn.multioutput</span> <span class="kn">import</span> <span class="n">MultiOutputRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">import</span> <span class="nn">time</span> <span class="k">as</span> <span class="nn">time</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Make Fake Dataset</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> 
+    <span class="n">n_features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># Total Features</span>
+    <span class="n">n_informative</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>   <span class="c1"># Informative Features </span>
+    <span class="n">n_targets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">noise</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span>
+
+<span class="p">)</span>
+
+<span class="c1"># Training and Testing</span>
+<span class="n">xtrain</span><span class="p">,</span> <span class="n">xtest</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">ytest</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/home/emmanuel/.conda/envs/sci_py36/lib/python3.6/site-packages/sklearn/model_selection/_split.py:2179: FutureWarning: From version 0.21, test_size will always complement train_size unless both are specified.
+  FutureWarning)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="algorithm-i-linear-regression">Algorithm I - Linear Regression<a class="headerlink" href="#algorithm-i-linear-regression" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="test-i-multioutput-linear-regression">Test I - MultiOutput Linear Regression<a class="headerlink" href="#test-i-multioutput-linear-regression" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">linear_model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">linear_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="n">ypred</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.00388 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="test-ii-multitask-linear-regression">Test II - MultiTask Linear Regression<a class="headerlink" href="#test-ii-multitask-linear-regression" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">linear_model_multi</span> <span class="o">=</span> <span class="n">MultiOutputRegressor</span><span class="p">(</span>
+    <span class="n">LinearRegression</span><span class="p">(),</span> 
+    <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># Number of cores to use to parallelize the training</span>
+<span class="p">)</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">linear_model_multi</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="n">ypred</span> <span class="o">=</span> <span class="n">linear_model_multi</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.143 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The results are exactly the same in the case of Linear Regression. But for more complex models, we can expect that this will not be the same. One obvious trade-off is the number of tasks (outputs) that we have. 100 outputs is quite a lot so that requires a lot of time to train.
+</div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="algorithm-ii-gaussian-process-regression">Algorithm II - Gaussian Process Regression<a class="headerlink" href="#algorithm-ii-gaussian-process-regression" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="multioutput">MultiOutput<a class="headerlink" href="#multioutput" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The GP algorithm does have multioutput so we can just pass in a vector of labels.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># define kernel function</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">ConstantKernel</span><span class="p">()</span> <span class="o">*</span> <span class="n">RBF</span><span class="p">()</span> <span class="o">+</span> <span class="n">WhiteKernel</span><span class="p">()</span>
+
+<span class="c1"># define GP model</span>
+<span class="n">gp_model</span> <span class="o">=</span> <span class="n">GaussianProcessRegressor</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>            <span class="c1"># kernel function (very important)</span>
+    <span class="n">normalize_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>         <span class="c1"># good standard practice</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span>         <span class="c1"># reproducibility</span>
+    <span class="n">n_restarts_optimizer</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># good practice (avoids local minima)</span>
+<span class="p">)</span>
+
+<span class="c1"># train GP Model</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">gp_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="n">ypred</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;GP Model:</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.697
+MSE: 0.762
+RMSE: 0.873
+R2: 1.000 
+Time: 8.17 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Define kernel function</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">ConstantKernel</span><span class="p">()</span> <span class="o">*</span> <span class="n">RBF</span><span class="p">()</span> <span class="o">+</span> <span class="n">WhiteKernel</span><span class="p">()</span>
+
+<span class="c1"># Define GP Model</span>
+<span class="n">gp_model</span> <span class="o">=</span> <span class="n">GaussianProcessRegressor</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>            <span class="c1"># kernel function (very important)</span>
+    <span class="n">normalize_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>         <span class="c1"># good standard practice</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span>         <span class="c1"># reproducibility</span>
+    <span class="n">n_restarts_optimizer</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># good practice (avoids local minima)</span>
+<span class="p">)</span>
+
+<span class="c1"># Define Multioutput function</span>
+<span class="n">gp_model_multi</span> <span class="o">=</span> <span class="n">MultiOutputRegressor</span><span class="p">(</span>
+    <span class="n">gp_model</span><span class="p">,</span> 
+    <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># Number of cores to use to parallelize the training</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit Model</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">gp_model_multi</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c1"># Predict with test set</span>
+<span class="n">ypred</span> <span class="o">=</span> <span class="n">gp_model_multi</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;GP Model:</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.698
+MSE: 0.766
+RMSE: 0.875
+R2: 1.000 
+Time: 10.8 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+<strong>Slightly</strong> better accuracy but notice in this case the training time was similar. This sometimes happens because some algorithms have a difficult time converging when there are multiple outputs.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="algorithm-iii-bayesian-ridge-regression">Algorithm III - Bayesian Ridge Regression<a class="headerlink" href="#algorithm-iii-bayesian-ridge-regression" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+This algorithm does not have multioutput functionality so instead we will use the multi-task functionality.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="multi-task">Multi-Task<a class="headerlink" href="#multi-task" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Define GP Model</span>
+<span class="n">bayes_model</span> <span class="o">=</span> <span class="n">BayesianRidge</span><span class="p">(</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>         <span class="c1"># good standard practice</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># Gives updates</span>
+<span class="p">)</span>
+
+<span class="c1"># Define Multioutput function</span>
+<span class="n">bayes_model_multi</span> <span class="o">=</span> <span class="n">MultiOutputRegressor</span><span class="p">(</span>
+    <span class="n">bayes_model</span><span class="p">,</span> 
+    <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># Number of cores to use to parallelize the training</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit Model</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">bayes_model_multi</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c1"># Predict with test set</span>
+<span class="n">ypred</span> <span class="o">=</span> <span class="n">bayes_model_multi</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;GP Model:</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GP Model:
+MAE: 0.640
+MSE: 0.643
+RMSE: 0.802
+R2: 1.000 
+Time: 0.0338 seconds
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../0_loading_data/" title="0 loading data" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                0 loading data
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../2_pca_transform/" title="2 pca transform" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                2 pca transform
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" /></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2020 ISP-UV
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/IPL-UV" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://twitter.com/isp" target="_blank" rel="noopener" title="twitter.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://isp.uv.es" target="_blank" rel="noopener" title="isp.uv.es" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../../../assets/javascripts/vendor.f81b9e8b.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.23546af0.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.58d22e8e.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../../../../javascripts/extra.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+      
+    
+  </body>
+</html>

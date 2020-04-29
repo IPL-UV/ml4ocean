@@ -1,0 +1,656 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# More Scalable GPs
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In this notebook I will demonstrate a few implementations of some more advanced and scalable GPs. These methods use approximations via inducing inputs (a smart subset of the data to represent the entire dataset). This allows the GP algorithms to run in $\mathcal{O}(NM^2)$ instead of $\mathcal{O}(N^3)$ where $N$ are the number of samples and $M$ are the number of inducing inputs.
+
+The algorithms to be used below are as follows:
+* Sparse GP - FITC Approximation (**TODO**)
+* Sparse GP - VFE Approximation (**Done**)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import numpy as np
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.base import clone
+from sklearn.decomposition import PCA
+# from sklearn.multioutput import MultiOutputRegressor
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.utils.estimator_checks import check_estimator
+import time as time
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# check_estimator(SVGP)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Import Module
+
+So here you need to add the path to the models directory. There are automated ways to do this but just for a simple case, you can just manually add the directoy whenever you start the notebook. See below.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import sys
+
+# Add the path to the models
+sys.path.insert(0, '/media/disk/erc/papers/2019_ML_OCN/code/ml4ocean')
+from src.models.utils import MultiTaskGP
+
+# Import the GP Functions
+from src.models.gpy import SGP, SVGP
+import GPy
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Make Fake Dataset
+X, y = make_regression(
+    n_samples=20000, 
+    n_features=20,    # Total Features
+    n_informative=3,   # Informative Features 
+    n_targets=10,
+    bias=10,
+    noise=0.8,
+    random_state=123
+
+)
+train_size = 10000
+
+# Training and Testing
+xtrain, xtest, ytrain, ytest = train_test_split(
+    X, y, train_size=train_size, random_state=123
+)
+
+xtrain.shape, ytrain.shape
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((10000, 20), (10000, 10))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Sparse Variational GP - MultiOutput (Shared Kernel, Shared Outputs)
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define Kernel Function
+input_dimensions = X.shape[1]
+kernel = GPy.kern.RBF(
+    input_dim=input_dimensions, 
+    ARD=False
+)
+
+# define GP model
+n_inducing = 25
+gp_model = SVGP(
+    kernel=kernel,
+    n_inducing=n_inducing,
+    max_iters=300, 
+    optimizer='lbfgs',
+    verbose=True,
+    n_restarts=10
+)
+
+
+# train GP Model
+# print(xtrain, ytrain)
+t0 = time.time()
+gp_model.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+# Predictions
+ypred, ystd = gp_model.predict(xtest, return_std=True)
+
+print(
+#     f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f"Training Time: {t1:.3} seconds"
+)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+ypred.shape, ystd.shape
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+gp_model.display_model()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### SVGP - Multi-Task
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define Kernel Function
+input_dimensions = X.shape[1]
+kernel = GPy.kern.RBF(
+    input_dim=input_dimensions, 
+    ARD=False
+)
+
+# define GP model
+n_inducing = 100
+gp_model = SVGP(
+    kernel=kernel,
+    n_inducing=n_inducing,
+    max_iters=300, 
+    optimizer='lbfgs',
+    verbose=False,
+    n_restarts=0
+)
+
+# Define Multioutput function
+gp_model_multi = MultiTaskGP(
+    gp_model, 
+    n_jobs=1,              # Number of cores to use to parallelize the training
+)
+
+# train GP Model
+t0 = time.time()
+gp_model_multi.fit(xtrain, ytrain)
+t1 = time.time() - t0
+
+print(
+    f"Training \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>KeyboardInterrupt caught, calling on_optimization_end() to round things up
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-11-eb03c966a4be&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     25</span> <span class="ansi-red-fg"># train GP Model</span>
+<span class="ansi-green-intense-fg ansi-bold">     26</span> t0 <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">.</span>time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 27</span><span class="ansi-red-fg"> </span>gp_model_multi<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>xtrain<span class="ansi-blue-fg">,</span> ytrain<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     28</span> t1 <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">.</span>time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-</span> t0
+<span class="ansi-green-intense-fg ansi-bold">     29</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/sklearn/multioutput.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-fg">(self, X, y, sample_weight)</span>
+<span class="ansi-green-intense-fg ansi-bold">    167</span>             delayed(_fit_estimator)(
+<span class="ansi-green-intense-fg ansi-bold">    168</span>                 self.estimator, X, y[:, i], sample_weight)
+<span class="ansi-green-fg">--&gt; 169</span><span class="ansi-red-fg">             for i in range(y.shape[1]))
+</span><span class="ansi-green-intense-fg ansi-bold">    170</span>         <span class="ansi-green-fg">return</span> self
+<span class="ansi-green-intense-fg ansi-bold">    171</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, iterable)</span>
+<span class="ansi-green-intense-fg ansi-bold">    922</span>                 self<span class="ansi-blue-fg">.</span>_iterating <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_original_iterator <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-intense-fg ansi-bold">    923</span> 
+<span class="ansi-green-fg">--&gt; 924</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">while</span> self<span class="ansi-blue-fg">.</span>dispatch_one_batch<span class="ansi-blue-fg">(</span>iterator<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    925</span>                 <span class="ansi-green-fg">pass</span>
+<span class="ansi-green-intense-fg ansi-bold">    926</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">dispatch_one_batch</span><span class="ansi-blue-fg">(self, iterator)</span>
+<span class="ansi-green-intense-fg ansi-bold">    757</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-intense-fg ansi-bold">    758</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 759</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>_dispatch<span class="ansi-blue-fg">(</span>tasks<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    760</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">    761</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">_dispatch</span><span class="ansi-blue-fg">(self, batch)</span>
+<span class="ansi-green-intense-fg ansi-bold">    714</span>         <span class="ansi-green-fg">with</span> self<span class="ansi-blue-fg">.</span>_lock<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    715</span>             job_idx <span class="ansi-blue-fg">=</span> len<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_jobs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 716</span><span class="ansi-red-fg">             </span>job <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">.</span>apply_async<span class="ansi-blue-fg">(</span>batch<span class="ansi-blue-fg">,</span> callback<span class="ansi-blue-fg">=</span>cb<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    717</span>             <span class="ansi-red-fg"># A job can complete so quickly than its callback is</span>
+<span class="ansi-green-intense-fg ansi-bold">    718</span>             <span class="ansi-red-fg"># called before we get here, causing self._jobs to</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/_parallel_backends.py</span> in <span class="ansi-cyan-fg">apply_async</span><span class="ansi-blue-fg">(self, func, callback)</span>
+<span class="ansi-green-intense-fg ansi-bold">    180</span>     <span class="ansi-green-fg">def</span> apply_async<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> func<span class="ansi-blue-fg">,</span> callback<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    181</span>         <span class="ansi-blue-fg">&#34;&#34;&#34;Schedule a func to be run&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; 182</span><span class="ansi-red-fg">         </span>result <span class="ansi-blue-fg">=</span> ImmediateResult<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    183</span>         <span class="ansi-green-fg">if</span> callback<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    184</span>             callback<span class="ansi-blue-fg">(</span>result<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/_parallel_backends.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, batch)</span>
+<span class="ansi-green-intense-fg ansi-bold">    547</span>         <span class="ansi-red-fg"># Don&#39;t delay the application, to avoid keeping the input</span>
+<span class="ansi-green-intense-fg ansi-bold">    548</span>         <span class="ansi-red-fg"># arguments in memory</span>
+<span class="ansi-green-fg">--&gt; 549</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>results <span class="ansi-blue-fg">=</span> batch<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    550</span> 
+<span class="ansi-green-intense-fg ansi-bold">    551</span>     <span class="ansi-green-fg">def</span> get<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    223</span>         <span class="ansi-green-fg">with</span> parallel_backend<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">,</span> n_jobs<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_n_jobs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>             return [func(*args, **kwargs)
+<span class="ansi-green-fg">--&gt; 225</span><span class="ansi-red-fg">                     for func, args, kwargs in self.items]
+</span><span class="ansi-green-intense-fg ansi-bold">    226</span> 
+<span class="ansi-green-intense-fg ansi-bold">    227</span>     <span class="ansi-green-fg">def</span> __len__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">    223</span>         <span class="ansi-green-fg">with</span> parallel_backend<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">,</span> n_jobs<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_n_jobs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>             return [func(*args, **kwargs)
+<span class="ansi-green-fg">--&gt; 225</span><span class="ansi-red-fg">                     for func, args, kwargs in self.items]
+</span><span class="ansi-green-intense-fg ansi-bold">    226</span> 
+<span class="ansi-green-intense-fg ansi-bold">    227</span>     <span class="ansi-green-fg">def</span> __len__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/sklearn/multioutput.py</span> in <span class="ansi-cyan-fg">_fit_estimator</span><span class="ansi-blue-fg">(estimator, X, y, sample_weight)</span>
+<span class="ansi-green-intense-fg ansi-bold">     37</span>         estimator<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">,</span> y<span class="ansi-blue-fg">,</span> sample_weight<span class="ansi-blue-fg">=</span>sample_weight<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     38</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 39</span><span class="ansi-red-fg">         </span>estimator<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">,</span> y<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     40</span>     <span class="ansi-green-fg">return</span> estimator
+<span class="ansi-green-intense-fg ansi-bold">     41</span> 
+
+<span class="ansi-green-fg">/media/disk/erc/papers/2019_ML_OCN/code/ml4ocean/src/models/gpy.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-fg">(self, X, y)</span>
+<span class="ansi-green-intense-fg ansi-bold">    131</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span>             gp_model.optimize(
+<span class="ansi-green-fg">--&gt; 133</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>optimizer<span class="ansi-blue-fg">,</span> messages<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>verbose<span class="ansi-blue-fg">,</span> max_iters<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters
+<span class="ansi-green-intense-fg ansi-bold">    134</span>             )
+<span class="ansi-green-intense-fg ansi-bold">    135</span>         self<span class="ansi-blue-fg">.</span>gp_model <span class="ansi-blue-fg">=</span> gp_model
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     91</span>         self<span class="ansi-blue-fg">.</span>_IN_OPTIMIZATION_ <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>         <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">==</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 93</span><span class="ansi-red-fg">             </span>ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span>start<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     94</span>         <span class="ansi-green-fg">elif</span> self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>rank<span class="ansi-blue-fg">==</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     95</span>             ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span>start<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/gp.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, messages, max_iters, ipython_notebook, clear_after_finish, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    657</span>         self<span class="ansi-blue-fg">.</span>inference_method<span class="ansi-blue-fg">.</span>on_optimization_start<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    658</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 659</span><span class="ansi-red-fg">             </span>ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>GP<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span> start<span class="ansi-blue-fg">,</span> messages<span class="ansi-blue-fg">,</span> max_iters<span class="ansi-blue-fg">,</span> ipython_notebook<span class="ansi-blue-fg">,</span> clear_after_finish<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    660</span>         <span class="ansi-green-fg">except</span> KeyboardInterrupt<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    661</span>             print<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;KeyboardInterrupt caught, calling on_optimization_end() to round things up&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/model.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, messages, max_iters, ipython_notebook, clear_after_finish, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    109</span> 
+<span class="ansi-green-intense-fg ansi-bold">    110</span>         <span class="ansi-green-fg">with</span> VerboseOptimization<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> opt<span class="ansi-blue-fg">,</span> maxiters<span class="ansi-blue-fg">=</span>max_iters<span class="ansi-blue-fg">,</span> verbose<span class="ansi-blue-fg">=</span>messages<span class="ansi-blue-fg">,</span> ipython_notebook<span class="ansi-blue-fg">=</span>ipython_notebook<span class="ansi-blue-fg">,</span> clear_after_finish<span class="ansi-blue-fg">=</span>clear_after_finish<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> vo<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 111</span><span class="ansi-red-fg">             </span>opt<span class="ansi-blue-fg">.</span>run<span class="ansi-blue-fg">(</span>start<span class="ansi-blue-fg">,</span> f_fp<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_objective_grads<span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_objective<span class="ansi-blue-fg">,</span> fp<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_grads<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    112</span> 
+<span class="ansi-green-intense-fg ansi-bold">    113</span>         self<span class="ansi-blue-fg">.</span>optimizer_array <span class="ansi-blue-fg">=</span> opt<span class="ansi-blue-fg">.</span>x_opt
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/optimization/optimization.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-fg">(self, x_init, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     49</span>     <span class="ansi-green-fg">def</span> run<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x_init<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     50</span>         start <span class="ansi-blue-fg">=</span> dt<span class="ansi-blue-fg">.</span>datetime<span class="ansi-blue-fg">.</span>now<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 51</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>opt<span class="ansi-blue-fg">(</span>x_init<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     52</span>         end <span class="ansi-blue-fg">=</span> dt<span class="ansi-blue-fg">.</span>datetime<span class="ansi-blue-fg">.</span>now<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     53</span>         self<span class="ansi-blue-fg">.</span>time <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>end <span class="ansi-blue-fg">-</span> start<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/optimization/optimization.py</span> in <span class="ansi-cyan-fg">opt</span><span class="ansi-blue-fg">(self, x_init, f_fp, f, fp)</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>             opt_dict<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;factr&#39;</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>bfgs_factor
+<span class="ansi-green-intense-fg ansi-bold">    123</span> 
+<span class="ansi-green-fg">--&gt; 124</span><span class="ansi-red-fg">         </span>opt_result <span class="ansi-blue-fg">=</span> optimize<span class="ansi-blue-fg">.</span>fmin_l_bfgs_b<span class="ansi-blue-fg">(</span>f_fp<span class="ansi-blue-fg">,</span> x_init<span class="ansi-blue-fg">,</span> maxfun<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters<span class="ansi-blue-fg">,</span> maxiter<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>opt_dict<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    125</span>         self<span class="ansi-blue-fg">.</span>x_opt <span class="ansi-blue-fg">=</span> opt_result<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    126</span>         self<span class="ansi-blue-fg">.</span>f_opt <span class="ansi-blue-fg">=</span> f_fp<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>x_opt<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">fmin_l_bfgs_b</span><span class="ansi-blue-fg">(func, x0, fprime, args, approx_grad, bounds, m, factr, pgtol, epsilon, iprint, maxfun, maxiter, disp, callback, maxls)</span>
+<span class="ansi-green-intense-fg ansi-bold">    197</span> 
+<span class="ansi-green-intense-fg ansi-bold">    198</span>     res = _minimize_lbfgsb(fun, x0, args=args, jac=jac, bounds=bounds,
+<span class="ansi-green-fg">--&gt; 199</span><span class="ansi-red-fg">                            **opts)
+</span><span class="ansi-green-intense-fg ansi-bold">    200</span>     d = {&#39;grad&#39;: res[&#39;jac&#39;],
+<span class="ansi-green-intense-fg ansi-bold">    201</span>          <span class="ansi-blue-fg">&#39;task&#39;</span><span class="ansi-blue-fg">:</span> res<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;message&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">_minimize_lbfgsb</span><span class="ansi-blue-fg">(fun, x0, args, jac, bounds, disp, maxcor, ftol, gtol, eps, maxfun, maxiter, iprint, callback, maxls, **unknown_options)</span>
+<span class="ansi-green-intense-fg ansi-bold">    333</span>             <span class="ansi-red-fg"># until the completion of the current minimization iteration.</span>
+<span class="ansi-green-intense-fg ansi-bold">    334</span>             <span class="ansi-red-fg"># Overwrite f and g:</span>
+<span class="ansi-green-fg">--&gt; 335</span><span class="ansi-red-fg">             </span>f<span class="ansi-blue-fg">,</span> g <span class="ansi-blue-fg">=</span> func_and_grad<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    336</span>         <span class="ansi-green-fg">elif</span> task_str<span class="ansi-blue-fg">.</span>startswith<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">b&#39;NEW_X&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    337</span>             <span class="ansi-red-fg"># new iteration</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">func_and_grad</span><span class="ansi-blue-fg">(x)</span>
+<span class="ansi-green-intense-fg ansi-bold">    283</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    284</span>         <span class="ansi-green-fg">def</span> func_and_grad<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 285</span><span class="ansi-red-fg">             </span>f <span class="ansi-blue-fg">=</span> fun<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    286</span>             g <span class="ansi-blue-fg">=</span> jac<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    287</span>             <span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">,</span> g
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/optimize.py</span> in <span class="ansi-cyan-fg">function_wrapper</span><span class="ansi-blue-fg">(*wrapper_args)</span>
+<span class="ansi-green-intense-fg ansi-bold">    298</span>     <span class="ansi-green-fg">def</span> function_wrapper<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>wrapper_args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    299</span>         ncalls<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">+=</span> <span class="ansi-cyan-fg">1</span>
+<span class="ansi-green-fg">--&gt; 300</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> function<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span><span class="ansi-blue-fg">(</span>wrapper_args <span class="ansi-blue-fg">+</span> args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    301</span> 
+<span class="ansi-green-intense-fg ansi-bold">    302</span>     <span class="ansi-green-fg">return</span> ncalls<span class="ansi-blue-fg">,</span> function_wrapper
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/optimize.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, x, *args)</span>
+<span class="ansi-green-intense-fg ansi-bold">     61</span>     <span class="ansi-green-fg">def</span> __call__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     62</span>         self<span class="ansi-blue-fg">.</span>x <span class="ansi-blue-fg">=</span> numpy<span class="ansi-blue-fg">.</span>asarray<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 63</span><span class="ansi-red-fg">         </span>fg <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>fun<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     64</span>         self<span class="ansi-blue-fg">.</span>jac <span class="ansi-blue-fg">=</span> fg<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     65</span>         <span class="ansi-green-fg">return</span> fg<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/model.py</span> in <span class="ansi-cyan-fg">_objective_grads</span><span class="ansi-blue-fg">(self, x)</span>
+<span class="ansi-green-intense-fg ansi-bold">    271</span>     <span class="ansi-green-fg">def</span> _objective_grads<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    272</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 273</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>optimizer_array <span class="ansi-blue-fg">=</span> x
+<span class="ansi-green-intense-fg ansi-bold">    274</span>             obj_f<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>obj_grads <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>objective_function<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>_transform_gradients<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>objective_function_gradients<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    275</span>             self<span class="ansi-blue-fg">.</span>_fail_count <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">0</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/parameterized.py</span> in <span class="ansi-cyan-fg">__setattr__</span><span class="ansi-blue-fg">(self, name, val)</span>
+<span class="ansi-green-intense-fg ansi-bold">    337</span>                 param <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>parameters<span class="ansi-blue-fg">[</span>pnames<span class="ansi-blue-fg">.</span>index<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    338</span>                 param<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> val<span class="ansi-blue-fg">;</span> <span class="ansi-green-fg">return</span>
+<span class="ansi-green-fg">--&gt; 339</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> object<span class="ansi-blue-fg">.</span>__setattr__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> name<span class="ansi-blue-fg">,</span> val<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    340</span> 
+<span class="ansi-green-intense-fg ansi-bold">    341</span>     <span class="ansi-red-fg">#===========================================================================</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">optimizer_array</span><span class="ansi-blue-fg">(self, p)</span>
+<span class="ansi-green-intense-fg ansi-bold">     86</span>                 self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>Bcast<span class="ansi-blue-fg">(</span>np<span class="ansi-blue-fg">.</span>int32<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>root<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     87</span>             self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>Bcast<span class="ansi-blue-fg">(</span>p<span class="ansi-blue-fg">,</span> root<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 88</span><span class="ansi-red-fg">         </span>SparseGP<span class="ansi-blue-fg">.</span>optimizer_array<span class="ansi-blue-fg">.</span>fset<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span>p<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span> 
+<span class="ansi-green-intense-fg ansi-bold">     90</span>     <span class="ansi-green-fg">def</span> optimize<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> optimizer<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> start<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">optimizer_array</span><span class="ansi-blue-fg">(self, p)</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span> 
+<span class="ansi-green-intense-fg ansi-bold">    123</span>         self<span class="ansi-blue-fg">.</span>_optimizer_copy_transformed <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-fg">--&gt; 124</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>trigger_update<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    125</span> 
+<span class="ansi-green-intense-fg ansi-bold">    126</span>     <span class="ansi-green-fg">def</span> _trigger_params_changed<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> trigger_parent<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/updateable.py</span> in <span class="ansi-cyan-fg">trigger_update</span><span class="ansi-blue-fg">(self, trigger_parent)</span>
+<span class="ansi-green-intense-fg ansi-bold">     77</span>             <span class="ansi-red-fg">#print &#34;Warning: updates are off, updating the model will do nothing&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>             <span class="ansi-green-fg">return</span>
+<span class="ansi-green-fg">---&gt; 79</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_trigger_params_changed<span class="ansi-blue-fg">(</span>trigger_parent<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">_trigger_params_changed</span><span class="ansi-blue-fg">(self, trigger_parent)</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    133</span>         <span class="ansi-blue-fg">[</span>p<span class="ansi-blue-fg">.</span>_trigger_params_changed<span class="ansi-blue-fg">(</span>trigger_parent<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> p <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>parameters <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> p<span class="ansi-blue-fg">.</span>is_fixed<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-fg">--&gt; 134</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>notify_observers<span class="ansi-blue-fg">(</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span> <span class="ansi-green-fg">if</span> trigger_parent <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">-</span>np<span class="ansi-blue-fg">.</span>inf<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    135</span> 
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-green-fg">def</span> _size_transformed<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/observable.py</span> in <span class="ansi-cyan-fg">notify_observers</span><span class="ansi-blue-fg">(self, which, min_priority)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span>                 which <span class="ansi-blue-fg">=</span> self
+<span class="ansi-green-intense-fg ansi-bold">     90</span>             <span class="ansi-green-fg">if</span> min_priority <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 91</span><span class="ansi-red-fg">                 </span><span class="ansi-blue-fg">[</span>callble<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     93</span>                 <span class="ansi-green-fg">for</span> p<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/observable.py</span> in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span>                 which <span class="ansi-blue-fg">=</span> self
+<span class="ansi-green-intense-fg ansi-bold">     90</span>             <span class="ansi-green-fg">if</span> min_priority <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 91</span><span class="ansi-red-fg">                 </span><span class="ansi-blue-fg">[</span>callble<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     93</span>                 <span class="ansi-green-fg">for</span> p<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">_parameters_changed_notification</span><span class="ansi-blue-fg">(self, me, which)</span>
+<span class="ansi-green-intense-fg ansi-bold">    506</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    507</span>         self<span class="ansi-blue-fg">.</span>_optimizer_copy_transformed <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span> <span class="ansi-red-fg"># tells the optimizer array to update on next request</span>
+<span class="ansi-green-fg">--&gt; 508</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    509</span>     <span class="ansi-green-fg">def</span> _pass_through_notify_observers<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> me<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    510</span>         self<span class="ansi-blue-fg">.</span>notify_observers<span class="ansi-blue-fg">(</span>which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/models/sparse_gp_regression.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">     64</span>             update_gradients_sparsegp<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> mpi_comm<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     65</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 66</span><span class="ansi-red-fg">             </span>super<span class="ansi-blue-fg">(</span>SparseGPRegression<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span>             update_gradients<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> mpi_comm<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    121</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 122</span><span class="ansi-red-fg">             </span>super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>         self.inference_method.inference(self.kern, self.X, self.Z, self.likelihood,
+<span class="ansi-green-intense-fg ansi-bold">     79</span>                                         self<span class="ansi-blue-fg">.</span>Y_normalized<span class="ansi-blue-fg">,</span> Y_metadata<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>Y_metadata<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 80</span><span class="ansi-red-fg">                                         mean_function=self.mean_function)
+</span><span class="ansi-green-intense-fg ansi-bold">     81</span>         self<span class="ansi-blue-fg">.</span>_update_gradients<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     82</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/inference/latent_function_inference/var_dtc.py</span> in <span class="ansi-cyan-fg">inference</span><span class="ansi-blue-fg">(self, kern, X, Z, likelihood, Y, Y_metadata, mean_function, precision, Lm, dL_dKmm, psi0, psi1, psi2, Z_tilde)</span>
+<span class="ansi-green-intense-fg ansi-bold">    207</span>         <span class="ansi-red-fg">#Bi, _ = dpotri(LB, lower=1)</span>
+<span class="ansi-green-intense-fg ansi-bold">    208</span>         <span class="ansi-red-fg">#symmetrify(Bi)</span>
+<span class="ansi-green-fg">--&gt; 209</span><span class="ansi-red-fg">         </span>Bi <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span>dpotri<span class="ansi-blue-fg">(</span>LB<span class="ansi-blue-fg">,</span> lower<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    210</span>         diag<span class="ansi-blue-fg">.</span>add<span class="ansi-blue-fg">(</span>Bi<span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    211</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/util/linalg.py</span> in <span class="ansi-cyan-fg">dpotri</span><span class="ansi-blue-fg">(A, lower)</span>
+<span class="ansi-green-intense-fg ansi-bold">    140</span> 
+<span class="ansi-green-intense-fg ansi-bold">    141</span>     A <span class="ansi-blue-fg">=</span> force_F_ordered<span class="ansi-blue-fg">(</span>A<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 142</span><span class="ansi-red-fg">     </span>R<span class="ansi-blue-fg">,</span> info <span class="ansi-blue-fg">=</span> lapack<span class="ansi-blue-fg">.</span>dpotri<span class="ansi-blue-fg">(</span>A<span class="ansi-blue-fg">,</span> lower<span class="ansi-blue-fg">=</span>lower<span class="ansi-blue-fg">)</span> <span class="ansi-red-fg">#needs to be zero here, seems to be a scipy bug</span>
+<span class="ansi-green-intense-fg ansi-bold">    143</span> 
+<span class="ansi-green-intense-fg ansi-bold">    144</span>     symmetrify<span class="ansi-blue-fg">(</span>R<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Predict with test set
+t0 = time.time()
+ypred1, ystd = gp_model_multi.predict(xtest, return_std=True)
+print(ypred.shape, ystd.shape)
+ypred2 = gp_model_multi.predict(xtest)
+np.testing.assert_array_equal(ypred1, ypred2)
+t1 = time.time() - t0
+# Get Stats
+mae = mean_absolute_error(ypred2, ytest)
+mse = mean_squared_error(ypred2, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred2, ytest)
+
+print(
+    f"GP Model:\n"
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Get Stats
+mae = mean_absolute_error(ypred, ytest)
+mse = mean_squared_error(ypred, ytest)
+rmse = np.sqrt(mse)
+r2 = r2_score(ypred, ytest)
+
+print(
+    f"MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}" 
+    f" \nTime: {t1:.3} seconds"
+)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Inverse transform predictions
+# ypred = pca_model.inverse_transform(ypred_red)
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Define target transformer
+pca_model = PCA(n_components=3)
+
+# Transform Targes
+ytrain_red = pca_model.fit_transform(ytrain)
+```
+
+</div>
+
+</div>
+
+

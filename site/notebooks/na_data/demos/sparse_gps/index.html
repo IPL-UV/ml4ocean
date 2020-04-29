@@ -1,0 +1,1845 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="ML 4 Ocean Applications">
+      
+      
+        <link rel="canonical" href="https://IPL-UV.github.io/ml4ocean/notebooks/na_data/demos/sparse_gps/">
+      
+      
+        <meta name="author" content="J. Emmanuel Johnson">
+      
+      <link rel="shortcut icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.3">
+    
+    
+      
+        <title>Sparse gps - ML 4 Ocean Applications</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.62d34fff.min.css">
+      
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.c8acc6db.min.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#2196f3">
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=source+code+pro:300,400,400i,700%7Csource+code+pro&display=fallback">
+        <style>body,input{font-family:"source code pro",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"source code pro",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../../../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#more-scalable-gps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-header-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            ML 4 Ocean Applications
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Sparse gps
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://IPL-UV.github.io/ml4ocean" title="ML 4 Ocean Applications" class="md-nav__button md-logo" aria-label="ML 4 Ocean Applications">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    ML 4 Ocean Applications
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/IPL-UV/ml4ocean/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IPL-UV/ml4ocean
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../.." title="Overview" class="md-nav__link">
+      Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../../APIREADME/" title="API Documentation" class="md-nav__link">
+      API Documentation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../../../ideas/" title="Ideas" class="md-nav__link">
+      Ideas
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Notebooks
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-1" type="checkbox" id="nav-4-1">
+    
+    <label class="md-nav__link" for="nav-4-1">
+      Global data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Global data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-1">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Global data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/1.1_load_processed_data_refactored/" title="1.1 load processed data refactored" class="md-nav__link">
+      1.1 load processed data refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/1_load_processed_data/" title="1 load processed data" class="md-nav__link">
+      1 load processed data
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/2_ml_algorithms/" title="2 ml algorithms" class="md-nav__link">
+      2 ml algorithms
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../../global_data/3_visualization/" title="3 visualization" class="md-nav__link">
+      3 visualization
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" type="checkbox" id="nav-4-2" checked>
+    
+    <label class="md-nav__link" for="nav-4-2">
+      Na data
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Na data" data-md-level="2">
+      <label class="md-nav__title" for="nav-4-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Na data
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../trial1_gps/" title="Trial1 gps" class="md-nav__link">
+      Trial1 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../trial2_gps/" title="Trial2 gps" class="md-nav__link">
+      Trial2 gps
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-3" type="checkbox" id="nav-4-2-3">
+    
+    <label class="md-nav__link" for="nav-4-2-3">
+      1 data analysis
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="1 data analysis" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        1 data analysis
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/1_analysis_control/" title="1 analysis control" class="md-nav__link">
+      1 analysis control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_data_analysis/scaling/" title="Scaling" class="md-nav__link">
+      Scaling
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-4" type="checkbox" id="nav-4-2-4">
+    
+    <label class="md-nav__link" for="nav-4-2-4">
+      2 preprocessing
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="2 preprocessing" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        2 preprocessing
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/0_preproc_control/" title="0 preproc control" class="md-nav__link">
+      0 preproc control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/0_preproc_control_outputs/" title="0 preproc control outputs" class="md-nav__link">
+      0 preproc control outputs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_preprocessing/clustering/" title="Clustering" class="md-nav__link">
+      Clustering
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5" type="checkbox" id="nav-4-2-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5">
+      3 models
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="3 models" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        3 models
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/0_baseline_control/" title="0 baseline control" class="md-nav__link">
+      0 baseline control
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/1_control_baseline/" title="1 control baseline" class="md-nav__link">
+      1 control baseline
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/1_control_output_transform/" title="1 control output transform" class="md-nav__link">
+      1 control output transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/revisit/" title="Revisit" class="md-nav__link">
+      Revisit
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-5" type="checkbox" id="nav-4-2-5-5">
+    
+    <label class="md-nav__link" for="nav-4-2-5-5">
+      Custom gpflow
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom gpflow" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom gpflow
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/gpflow_demo/" title="Gpflow demo" class="md-nav__link">
+      Gpflow demo
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/multitask_svgp/" title="Multitask svgp" class="md-nav__link">
+      Multitask svgp
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_gpflow/svgp/" title="Svgp" class="md-nav__link">
+      Svgp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-5-6" type="checkbox" id="nav-4-2-5-6">
+    
+    <label class="md-nav__link" for="nav-4-2-5-6">
+      Custom sklearn
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Custom sklearn" data-md-level="4">
+      <label class="md-nav__title" for="nav-4-2-5-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Custom sklearn
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_models/custom_sklearn/1_multitask_vs_multioutput/" title="1 multitask vs multioutput" class="md-nav__link">
+      1 multitask vs multioutput
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-6" type="checkbox" id="nav-4-2-6">
+    
+    <label class="md-nav__link" for="nav-4-2-6">
+      4 pipeline
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="4 pipeline" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        4 pipeline
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/0.0_full_walkthrough/" title="0.0 full walkthrough" class="md-nav__link">
+      0.0 full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/2.0_experiment_refactored/" title="2.0 experiment refactored" class="md-nav__link">
+      2.0 experiment refactored
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/3.0_results/" title="3.0 results" class="md-nav__link">
+      3.0 results
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_pipeline/4.0_validation/" title="4.0 validation" class="md-nav__link">
+      4.0 validation
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-7" type="checkbox" id="nav-4-2-7">
+    
+    <label class="md-nav__link" for="nav-4-2-7">
+      5 plots
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="5 plots" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-7">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        5 plots
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../5_plots/figures_mlsp/" title="Figures mlsp" class="md-nav__link">
+      Figures mlsp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-8" type="checkbox" id="nav-4-2-8" checked>
+    
+    <label class="md-nav__link" for="nav-4-2-8">
+      Demos
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Demos" data-md-level="3">
+      <label class="md-nav__title" for="nav-4-2-8">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Demos
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../0_loading_data/" title="0 loading data" class="md-nav__link">
+      0 loading data
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../1_multitask_vs_multioutput/" title="1 multitask vs multioutput" class="md-nav__link">
+      1 multitask vs multioutput
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../2_pca_transform/" title="2 pca transform" class="md-nav__link">
+      2 pca transform
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../3_confidence_intervals/" title="3 confidence intervals" class="md-nav__link">
+      3 confidence intervals
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../Untitled/" title="Untitled" class="md-nav__link">
+      Untitled
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_gp_example/" title="Full gp example" class="md-nav__link">
+      Full gp example
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_walkthrough-Copy1/" title="full walkthrough Copy1" class="md-nav__link">
+      full walkthrough Copy1
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../full_walkthrough/" title="Full walkthrough" class="md-nav__link">
+      Full walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../meta_info/" title="Meta info" class="md-nav__link">
+      Meta info
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Sparse gps
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13Z" /></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="Sparse gps" class="md-nav__link md-nav__link--active">
+      Sparse gps
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-module" class="md-nav__link">
+    Import Module
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sparse-variational-gp-multioutput-shared-kernel-shared-outputs" class="md-nav__link">
+    Sparse Variational GP - MultiOutput (Shared Kernel, Shared Outputs)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#svgp-multi-task" class="md-nav__link">
+    SVGP - Multi-Task
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-module" class="md-nav__link">
+    Import Module
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sparse-variational-gp-multioutput-shared-kernel-shared-outputs" class="md-nav__link">
+    Sparse Variational GP - MultiOutput (Shared Kernel, Shared Outputs)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#svgp-multi-task" class="md-nav__link">
+    SVGP - Multi-Task
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/IPL-UV/ml4ocean/edit/master/docs/notebooks/na_data/demos/sparse_gps.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h1 id="more-scalable-gps">More Scalable GPs<a class="headerlink" href="#more-scalable-gps" title="Permanent link">&para;</a></h1>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In this notebook I will demonstrate a few implementations of some more advanced and scalable GPs. These methods use approximations via inducing inputs (a smart subset of the data to represent the entire dataset). This allows the GP algorithms to run in <span><span class="MathJax_Preview">\mathcal{O}(NM^2)</span><script type="math/tex">\mathcal{O}(NM^2)</script></span> instead of <span><span class="MathJax_Preview">\mathcal{O}(N^3)</span><script type="math/tex">\mathcal{O}(N^3)</script></span> where <span><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> are the number of samples and <span><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> are the number of inducing inputs.</p>
+<p>The algorithms to be used below are as follows:
+* Sparse GP - FITC Approximation (<strong>TODO</strong>)
+* Sparse GP - VFE Approximation (<strong>Done</strong>)
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">clone</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
+<span class="c1"># from sklearn.multioutput import MultiOutputRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">TransformedTargetRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.estimator_checks</span> <span class="kn">import</span> <span class="n">check_estimator</span>
+<span class="kn">import</span> <span class="nn">time</span> <span class="k">as</span> <span class="nn">time</span>
+
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># check_estimator(SVGP)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="import-module">Import Module<a class="headerlink" href="#import-module" title="Permanent link">&para;</a></h4>
+<p>So here you need to add the path to the models directory. There are automated ways to do this but just for a simple case, you can just manually add the directoy whenever you start the notebook. See below.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c1"># Add the path to the models</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;/media/disk/erc/papers/2019_ML_OCN/code/ml4ocean&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">src.models.utils</span> <span class="kn">import</span> <span class="n">MultiTaskGP</span>
+
+<span class="c1"># Import the GP Functions</span>
+<span class="kn">from</span> <span class="nn">src.models.gpy</span> <span class="kn">import</span> <span class="n">SGP</span><span class="p">,</span> <span class="n">SVGP</span>
+<span class="kn">import</span> <span class="nn">GPy</span>
+
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Make Fake Dataset</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> 
+    <span class="n">n_features</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>    <span class="c1"># Total Features</span>
+    <span class="n">n_informative</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>   <span class="c1"># Informative Features </span>
+    <span class="n">n_targets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">noise</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span>
+
+<span class="p">)</span>
+<span class="n">train_size</span> <span class="o">=</span> <span class="mi">10000</span>
+
+<span class="c1"># Training and Testing</span>
+<span class="n">xtrain</span><span class="p">,</span> <span class="n">xtest</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">ytest</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span>
+<span class="p">)</span>
+
+<span class="n">xtrain</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">ytrain</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((10000, 20), (10000, 10))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="sparse-variational-gp-multioutput-shared-kernel-shared-outputs">Sparse Variational GP - MultiOutput (Shared Kernel, Shared Outputs)<a class="headerlink" href="#sparse-variational-gp-multioutput-shared-kernel-shared-outputs" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Define Kernel Function</span>
+<span class="n">input_dimensions</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">GPy</span><span class="o">.</span><span class="n">kern</span><span class="o">.</span><span class="n">RBF</span><span class="p">(</span>
+    <span class="n">input_dim</span><span class="o">=</span><span class="n">input_dimensions</span><span class="p">,</span> 
+    <span class="n">ARD</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="c1"># define GP model</span>
+<span class="n">n_inducing</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">gp_model</span> <span class="o">=</span> <span class="n">SVGP</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="n">n_inducing</span><span class="o">=</span><span class="n">n_inducing</span><span class="p">,</span>
+    <span class="n">max_iters</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> 
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_restarts</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+
+
+<span class="c1"># train GP Model</span>
+<span class="c1"># print(xtrain, ytrain)</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">gp_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c1"># Predictions</span>
+<span class="n">ypred</span><span class="p">,</span> <span class="n">ystd</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+<span class="c1">#     f&quot;MAE: {mae:.3f}\nMSE: {mse:.3f}\nRMSE: {rmse:.3f}\nR2: {r2:.3f}&quot; </span>
+    <span class="sa">f</span><span class="s2">&quot;Training Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">ypred</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">ystd</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">gp_model</span><span class="o">.</span><span class="n">display_model</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="svgp-multi-task">SVGP - Multi-Task<a class="headerlink" href="#svgp-multi-task" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Define Kernel Function</span>
+<span class="n">input_dimensions</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">GPy</span><span class="o">.</span><span class="n">kern</span><span class="o">.</span><span class="n">RBF</span><span class="p">(</span>
+    <span class="n">input_dim</span><span class="o">=</span><span class="n">input_dimensions</span><span class="p">,</span> 
+    <span class="n">ARD</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="c1"># define GP model</span>
+<span class="n">n_inducing</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">gp_model</span> <span class="o">=</span> <span class="n">SVGP</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="n">n_inducing</span><span class="o">=</span><span class="n">n_inducing</span><span class="p">,</span>
+    <span class="n">max_iters</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> 
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">n_restarts</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+
+<span class="c1"># Define Multioutput function</span>
+<span class="n">gp_model_multi</span> <span class="o">=</span> <span class="n">MultiTaskGP</span><span class="p">(</span>
+    <span class="n">gp_model</span><span class="p">,</span> 
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># Number of cores to use to parallelize the training</span>
+<span class="p">)</span>
+
+<span class="c1"># train GP Model</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">gp_model_multi</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Training </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>KeyboardInterrupt caught, calling on_optimization_end() to round things up
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-11-eb03c966a4be&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     25</span> <span class="ansi-red-fg"># train GP Model</span>
+<span class="ansi-green-intense-fg ansi-bold">     26</span> t0 <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">.</span>time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 27</span><span class="ansi-red-fg"> </span>gp_model_multi<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>xtrain<span class="ansi-blue-fg">,</span> ytrain<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     28</span> t1 <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">.</span>time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-</span> t0
+<span class="ansi-green-intense-fg ansi-bold">     29</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/sklearn/multioutput.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-fg">(self, X, y, sample_weight)</span>
+<span class="ansi-green-intense-fg ansi-bold">    167</span>             delayed(_fit_estimator)(
+<span class="ansi-green-intense-fg ansi-bold">    168</span>                 self.estimator, X, y[:, i], sample_weight)
+<span class="ansi-green-fg">--&gt; 169</span><span class="ansi-red-fg">             for i in range(y.shape[1]))
+</span><span class="ansi-green-intense-fg ansi-bold">    170</span>         <span class="ansi-green-fg">return</span> self
+<span class="ansi-green-intense-fg ansi-bold">    171</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, iterable)</span>
+<span class="ansi-green-intense-fg ansi-bold">    922</span>                 self<span class="ansi-blue-fg">.</span>_iterating <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_original_iterator <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-intense-fg ansi-bold">    923</span> 
+<span class="ansi-green-fg">--&gt; 924</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">while</span> self<span class="ansi-blue-fg">.</span>dispatch_one_batch<span class="ansi-blue-fg">(</span>iterator<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    925</span>                 <span class="ansi-green-fg">pass</span>
+<span class="ansi-green-intense-fg ansi-bold">    926</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">dispatch_one_batch</span><span class="ansi-blue-fg">(self, iterator)</span>
+<span class="ansi-green-intense-fg ansi-bold">    757</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-intense-fg ansi-bold">    758</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 759</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>_dispatch<span class="ansi-blue-fg">(</span>tasks<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    760</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">    761</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">_dispatch</span><span class="ansi-blue-fg">(self, batch)</span>
+<span class="ansi-green-intense-fg ansi-bold">    714</span>         <span class="ansi-green-fg">with</span> self<span class="ansi-blue-fg">.</span>_lock<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    715</span>             job_idx <span class="ansi-blue-fg">=</span> len<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_jobs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 716</span><span class="ansi-red-fg">             </span>job <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">.</span>apply_async<span class="ansi-blue-fg">(</span>batch<span class="ansi-blue-fg">,</span> callback<span class="ansi-blue-fg">=</span>cb<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    717</span>             <span class="ansi-red-fg"># A job can complete so quickly than its callback is</span>
+<span class="ansi-green-intense-fg ansi-bold">    718</span>             <span class="ansi-red-fg"># called before we get here, causing self._jobs to</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/_parallel_backends.py</span> in <span class="ansi-cyan-fg">apply_async</span><span class="ansi-blue-fg">(self, func, callback)</span>
+<span class="ansi-green-intense-fg ansi-bold">    180</span>     <span class="ansi-green-fg">def</span> apply_async<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> func<span class="ansi-blue-fg">,</span> callback<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    181</span>         <span class="ansi-blue-fg">&#34;&#34;&#34;Schedule a func to be run&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; 182</span><span class="ansi-red-fg">         </span>result <span class="ansi-blue-fg">=</span> ImmediateResult<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    183</span>         <span class="ansi-green-fg">if</span> callback<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    184</span>             callback<span class="ansi-blue-fg">(</span>result<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/_parallel_backends.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, batch)</span>
+<span class="ansi-green-intense-fg ansi-bold">    547</span>         <span class="ansi-red-fg"># Don&#39;t delay the application, to avoid keeping the input</span>
+<span class="ansi-green-intense-fg ansi-bold">    548</span>         <span class="ansi-red-fg"># arguments in memory</span>
+<span class="ansi-green-fg">--&gt; 549</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>results <span class="ansi-blue-fg">=</span> batch<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    550</span> 
+<span class="ansi-green-intense-fg ansi-bold">    551</span>     <span class="ansi-green-fg">def</span> get<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    223</span>         <span class="ansi-green-fg">with</span> parallel_backend<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">,</span> n_jobs<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_n_jobs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>             return [func(*args, **kwargs)
+<span class="ansi-green-fg">--&gt; 225</span><span class="ansi-red-fg">                     for func, args, kwargs in self.items]
+</span><span class="ansi-green-intense-fg ansi-bold">    226</span> 
+<span class="ansi-green-intense-fg ansi-bold">    227</span>     <span class="ansi-green-fg">def</span> __len__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/joblib/parallel.py</span> in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">    223</span>         <span class="ansi-green-fg">with</span> parallel_backend<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_backend<span class="ansi-blue-fg">,</span> n_jobs<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_n_jobs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>             return [func(*args, **kwargs)
+<span class="ansi-green-fg">--&gt; 225</span><span class="ansi-red-fg">                     for func, args, kwargs in self.items]
+</span><span class="ansi-green-intense-fg ansi-bold">    226</span> 
+<span class="ansi-green-intense-fg ansi-bold">    227</span>     <span class="ansi-green-fg">def</span> __len__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/sklearn/multioutput.py</span> in <span class="ansi-cyan-fg">_fit_estimator</span><span class="ansi-blue-fg">(estimator, X, y, sample_weight)</span>
+<span class="ansi-green-intense-fg ansi-bold">     37</span>         estimator<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">,</span> y<span class="ansi-blue-fg">,</span> sample_weight<span class="ansi-blue-fg">=</span>sample_weight<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     38</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 39</span><span class="ansi-red-fg">         </span>estimator<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">,</span> y<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     40</span>     <span class="ansi-green-fg">return</span> estimator
+<span class="ansi-green-intense-fg ansi-bold">     41</span> 
+
+<span class="ansi-green-fg">/media/disk/erc/papers/2019_ML_OCN/code/ml4ocean/src/models/gpy.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-fg">(self, X, y)</span>
+<span class="ansi-green-intense-fg ansi-bold">    131</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span>             gp_model.optimize(
+<span class="ansi-green-fg">--&gt; 133</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>optimizer<span class="ansi-blue-fg">,</span> messages<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>verbose<span class="ansi-blue-fg">,</span> max_iters<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters
+<span class="ansi-green-intense-fg ansi-bold">    134</span>             )
+<span class="ansi-green-intense-fg ansi-bold">    135</span>         self<span class="ansi-blue-fg">.</span>gp_model <span class="ansi-blue-fg">=</span> gp_model
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     91</span>         self<span class="ansi-blue-fg">.</span>_IN_OPTIMIZATION_ <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>         <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">==</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 93</span><span class="ansi-red-fg">             </span>ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span>start<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     94</span>         <span class="ansi-green-fg">elif</span> self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>rank<span class="ansi-blue-fg">==</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     95</span>             ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span>start<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/gp.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, messages, max_iters, ipython_notebook, clear_after_finish, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    657</span>         self<span class="ansi-blue-fg">.</span>inference_method<span class="ansi-blue-fg">.</span>on_optimization_start<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    658</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 659</span><span class="ansi-red-fg">             </span>ret <span class="ansi-blue-fg">=</span> super<span class="ansi-blue-fg">(</span>GP<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>optimize<span class="ansi-blue-fg">(</span>optimizer<span class="ansi-blue-fg">,</span> start<span class="ansi-blue-fg">,</span> messages<span class="ansi-blue-fg">,</span> max_iters<span class="ansi-blue-fg">,</span> ipython_notebook<span class="ansi-blue-fg">,</span> clear_after_finish<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    660</span>         <span class="ansi-green-fg">except</span> KeyboardInterrupt<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    661</span>             print<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;KeyboardInterrupt caught, calling on_optimization_end() to round things up&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/model.py</span> in <span class="ansi-cyan-fg">optimize</span><span class="ansi-blue-fg">(self, optimizer, start, messages, max_iters, ipython_notebook, clear_after_finish, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    109</span> 
+<span class="ansi-green-intense-fg ansi-bold">    110</span>         <span class="ansi-green-fg">with</span> VerboseOptimization<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> opt<span class="ansi-blue-fg">,</span> maxiters<span class="ansi-blue-fg">=</span>max_iters<span class="ansi-blue-fg">,</span> verbose<span class="ansi-blue-fg">=</span>messages<span class="ansi-blue-fg">,</span> ipython_notebook<span class="ansi-blue-fg">=</span>ipython_notebook<span class="ansi-blue-fg">,</span> clear_after_finish<span class="ansi-blue-fg">=</span>clear_after_finish<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> vo<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 111</span><span class="ansi-red-fg">             </span>opt<span class="ansi-blue-fg">.</span>run<span class="ansi-blue-fg">(</span>start<span class="ansi-blue-fg">,</span> f_fp<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_objective_grads<span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_objective<span class="ansi-blue-fg">,</span> fp<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>_grads<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    112</span> 
+<span class="ansi-green-intense-fg ansi-bold">    113</span>         self<span class="ansi-blue-fg">.</span>optimizer_array <span class="ansi-blue-fg">=</span> opt<span class="ansi-blue-fg">.</span>x_opt
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/optimization/optimization.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-fg">(self, x_init, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     49</span>     <span class="ansi-green-fg">def</span> run<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x_init<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     50</span>         start <span class="ansi-blue-fg">=</span> dt<span class="ansi-blue-fg">.</span>datetime<span class="ansi-blue-fg">.</span>now<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 51</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>opt<span class="ansi-blue-fg">(</span>x_init<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     52</span>         end <span class="ansi-blue-fg">=</span> dt<span class="ansi-blue-fg">.</span>datetime<span class="ansi-blue-fg">.</span>now<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     53</span>         self<span class="ansi-blue-fg">.</span>time <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>end <span class="ansi-blue-fg">-</span> start<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/optimization/optimization.py</span> in <span class="ansi-cyan-fg">opt</span><span class="ansi-blue-fg">(self, x_init, f_fp, f, fp)</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>             opt_dict<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;factr&#39;</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>bfgs_factor
+<span class="ansi-green-intense-fg ansi-bold">    123</span> 
+<span class="ansi-green-fg">--&gt; 124</span><span class="ansi-red-fg">         </span>opt_result <span class="ansi-blue-fg">=</span> optimize<span class="ansi-blue-fg">.</span>fmin_l_bfgs_b<span class="ansi-blue-fg">(</span>f_fp<span class="ansi-blue-fg">,</span> x_init<span class="ansi-blue-fg">,</span> maxfun<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters<span class="ansi-blue-fg">,</span> maxiter<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>max_iters<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>opt_dict<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    125</span>         self<span class="ansi-blue-fg">.</span>x_opt <span class="ansi-blue-fg">=</span> opt_result<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    126</span>         self<span class="ansi-blue-fg">.</span>f_opt <span class="ansi-blue-fg">=</span> f_fp<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>x_opt<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">fmin_l_bfgs_b</span><span class="ansi-blue-fg">(func, x0, fprime, args, approx_grad, bounds, m, factr, pgtol, epsilon, iprint, maxfun, maxiter, disp, callback, maxls)</span>
+<span class="ansi-green-intense-fg ansi-bold">    197</span> 
+<span class="ansi-green-intense-fg ansi-bold">    198</span>     res = _minimize_lbfgsb(fun, x0, args=args, jac=jac, bounds=bounds,
+<span class="ansi-green-fg">--&gt; 199</span><span class="ansi-red-fg">                            **opts)
+</span><span class="ansi-green-intense-fg ansi-bold">    200</span>     d = {&#39;grad&#39;: res[&#39;jac&#39;],
+<span class="ansi-green-intense-fg ansi-bold">    201</span>          <span class="ansi-blue-fg">&#39;task&#39;</span><span class="ansi-blue-fg">:</span> res<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;message&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">_minimize_lbfgsb</span><span class="ansi-blue-fg">(fun, x0, args, jac, bounds, disp, maxcor, ftol, gtol, eps, maxfun, maxiter, iprint, callback, maxls, **unknown_options)</span>
+<span class="ansi-green-intense-fg ansi-bold">    333</span>             <span class="ansi-red-fg"># until the completion of the current minimization iteration.</span>
+<span class="ansi-green-intense-fg ansi-bold">    334</span>             <span class="ansi-red-fg"># Overwrite f and g:</span>
+<span class="ansi-green-fg">--&gt; 335</span><span class="ansi-red-fg">             </span>f<span class="ansi-blue-fg">,</span> g <span class="ansi-blue-fg">=</span> func_and_grad<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    336</span>         <span class="ansi-green-fg">elif</span> task_str<span class="ansi-blue-fg">.</span>startswith<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">b&#39;NEW_X&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    337</span>             <span class="ansi-red-fg"># new iteration</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/lbfgsb.py</span> in <span class="ansi-cyan-fg">func_and_grad</span><span class="ansi-blue-fg">(x)</span>
+<span class="ansi-green-intense-fg ansi-bold">    283</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    284</span>         <span class="ansi-green-fg">def</span> func_and_grad<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 285</span><span class="ansi-red-fg">             </span>f <span class="ansi-blue-fg">=</span> fun<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    286</span>             g <span class="ansi-blue-fg">=</span> jac<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    287</span>             <span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">,</span> g
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/optimize.py</span> in <span class="ansi-cyan-fg">function_wrapper</span><span class="ansi-blue-fg">(*wrapper_args)</span>
+<span class="ansi-green-intense-fg ansi-bold">    298</span>     <span class="ansi-green-fg">def</span> function_wrapper<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>wrapper_args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    299</span>         ncalls<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">+=</span> <span class="ansi-cyan-fg">1</span>
+<span class="ansi-green-fg">--&gt; 300</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> function<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span><span class="ansi-blue-fg">(</span>wrapper_args <span class="ansi-blue-fg">+</span> args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    301</span> 
+<span class="ansi-green-intense-fg ansi-bold">    302</span>     <span class="ansi-green-fg">return</span> ncalls<span class="ansi-blue-fg">,</span> function_wrapper
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/scipy/optimize/optimize.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, x, *args)</span>
+<span class="ansi-green-intense-fg ansi-bold">     61</span>     <span class="ansi-green-fg">def</span> __call__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     62</span>         self<span class="ansi-blue-fg">.</span>x <span class="ansi-blue-fg">=</span> numpy<span class="ansi-blue-fg">.</span>asarray<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 63</span><span class="ansi-red-fg">         </span>fg <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>fun<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     64</span>         self<span class="ansi-blue-fg">.</span>jac <span class="ansi-blue-fg">=</span> fg<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     65</span>         <span class="ansi-green-fg">return</span> fg<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/model.py</span> in <span class="ansi-cyan-fg">_objective_grads</span><span class="ansi-blue-fg">(self, x)</span>
+<span class="ansi-green-intense-fg ansi-bold">    271</span>     <span class="ansi-green-fg">def</span> _objective_grads<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    272</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 273</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>optimizer_array <span class="ansi-blue-fg">=</span> x
+<span class="ansi-green-intense-fg ansi-bold">    274</span>             obj_f<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>obj_grads <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>objective_function<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>_transform_gradients<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>objective_function_gradients<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    275</span>             self<span class="ansi-blue-fg">.</span>_fail_count <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">0</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/parameterized.py</span> in <span class="ansi-cyan-fg">__setattr__</span><span class="ansi-blue-fg">(self, name, val)</span>
+<span class="ansi-green-intense-fg ansi-bold">    337</span>                 param <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>parameters<span class="ansi-blue-fg">[</span>pnames<span class="ansi-blue-fg">.</span>index<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    338</span>                 param<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> val<span class="ansi-blue-fg">;</span> <span class="ansi-green-fg">return</span>
+<span class="ansi-green-fg">--&gt; 339</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> object<span class="ansi-blue-fg">.</span>__setattr__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> name<span class="ansi-blue-fg">,</span> val<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    340</span> 
+<span class="ansi-green-intense-fg ansi-bold">    341</span>     <span class="ansi-red-fg">#===========================================================================</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">optimizer_array</span><span class="ansi-blue-fg">(self, p)</span>
+<span class="ansi-green-intense-fg ansi-bold">     86</span>                 self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>Bcast<span class="ansi-blue-fg">(</span>np<span class="ansi-blue-fg">.</span>int32<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>root<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     87</span>             self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">.</span>Bcast<span class="ansi-blue-fg">(</span>p<span class="ansi-blue-fg">,</span> root<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 88</span><span class="ansi-red-fg">         </span>SparseGP<span class="ansi-blue-fg">.</span>optimizer_array<span class="ansi-blue-fg">.</span>fset<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span>p<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span> 
+<span class="ansi-green-intense-fg ansi-bold">     90</span>     <span class="ansi-green-fg">def</span> optimize<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> optimizer<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> start<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">optimizer_array</span><span class="ansi-blue-fg">(self, p)</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span> 
+<span class="ansi-green-intense-fg ansi-bold">    123</span>         self<span class="ansi-blue-fg">.</span>_optimizer_copy_transformed <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-fg">--&gt; 124</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>trigger_update<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    125</span> 
+<span class="ansi-green-intense-fg ansi-bold">    126</span>     <span class="ansi-green-fg">def</span> _trigger_params_changed<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> trigger_parent<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/updateable.py</span> in <span class="ansi-cyan-fg">trigger_update</span><span class="ansi-blue-fg">(self, trigger_parent)</span>
+<span class="ansi-green-intense-fg ansi-bold">     77</span>             <span class="ansi-red-fg">#print &#34;Warning: updates are off, updating the model will do nothing&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>             <span class="ansi-green-fg">return</span>
+<span class="ansi-green-fg">---&gt; 79</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_trigger_params_changed<span class="ansi-blue-fg">(</span>trigger_parent<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">_trigger_params_changed</span><span class="ansi-blue-fg">(self, trigger_parent)</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    133</span>         <span class="ansi-blue-fg">[</span>p<span class="ansi-blue-fg">.</span>_trigger_params_changed<span class="ansi-blue-fg">(</span>trigger_parent<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> p <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>parameters <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> p<span class="ansi-blue-fg">.</span>is_fixed<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-fg">--&gt; 134</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>notify_observers<span class="ansi-blue-fg">(</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span> <span class="ansi-green-fg">if</span> trigger_parent <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">-</span>np<span class="ansi-blue-fg">.</span>inf<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    135</span> 
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-green-fg">def</span> _size_transformed<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/observable.py</span> in <span class="ansi-cyan-fg">notify_observers</span><span class="ansi-blue-fg">(self, which, min_priority)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span>                 which <span class="ansi-blue-fg">=</span> self
+<span class="ansi-green-intense-fg ansi-bold">     90</span>             <span class="ansi-green-fg">if</span> min_priority <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 91</span><span class="ansi-red-fg">                 </span><span class="ansi-blue-fg">[</span>callble<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     93</span>                 <span class="ansi-green-fg">for</span> p<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/observable.py</span> in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span>                 which <span class="ansi-blue-fg">=</span> self
+<span class="ansi-green-intense-fg ansi-bold">     90</span>             <span class="ansi-green-fg">if</span> min_priority <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 91</span><span class="ansi-red-fg">                 </span><span class="ansi-blue-fg">[</span>callble<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     93</span>                 <span class="ansi-green-fg">for</span> p<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> callble <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>observers<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/paramz/core/parameter_core.py</span> in <span class="ansi-cyan-fg">_parameters_changed_notification</span><span class="ansi-blue-fg">(self, me, which)</span>
+<span class="ansi-green-intense-fg ansi-bold">    506</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    507</span>         self<span class="ansi-blue-fg">.</span>_optimizer_copy_transformed <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">False</span> <span class="ansi-red-fg"># tells the optimizer array to update on next request</span>
+<span class="ansi-green-fg">--&gt; 508</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    509</span>     <span class="ansi-green-fg">def</span> _pass_through_notify_observers<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> me<span class="ansi-blue-fg">,</span> which<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    510</span>         self<span class="ansi-blue-fg">.</span>notify_observers<span class="ansi-blue-fg">(</span>which<span class="ansi-blue-fg">=</span>which<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/models/sparse_gp_regression.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">     64</span>             update_gradients_sparsegp<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> mpi_comm<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     65</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 66</span><span class="ansi-red-fg">             </span>super<span class="ansi-blue-fg">(</span>SparseGPRegression<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp_mpi.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span>             update_gradients<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> mpi_comm<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>mpi_comm<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    121</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 122</span><span class="ansi-red-fg">             </span>super<span class="ansi-blue-fg">(</span>SparseGP_MPI<span class="ansi-blue-fg">,</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>parameters_changed<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/core/sparse_gp.py</span> in <span class="ansi-cyan-fg">parameters_changed</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>         self.inference_method.inference(self.kern, self.X, self.Z, self.likelihood,
+<span class="ansi-green-intense-fg ansi-bold">     79</span>                                         self<span class="ansi-blue-fg">.</span>Y_normalized<span class="ansi-blue-fg">,</span> Y_metadata<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>Y_metadata<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 80</span><span class="ansi-red-fg">                                         mean_function=self.mean_function)
+</span><span class="ansi-green-intense-fg ansi-bold">     81</span>         self<span class="ansi-blue-fg">.</span>_update_gradients<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     82</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/inference/latent_function_inference/var_dtc.py</span> in <span class="ansi-cyan-fg">inference</span><span class="ansi-blue-fg">(self, kern, X, Z, likelihood, Y, Y_metadata, mean_function, precision, Lm, dL_dKmm, psi0, psi1, psi2, Z_tilde)</span>
+<span class="ansi-green-intense-fg ansi-bold">    207</span>         <span class="ansi-red-fg">#Bi, _ = dpotri(LB, lower=1)</span>
+<span class="ansi-green-intense-fg ansi-bold">    208</span>         <span class="ansi-red-fg">#symmetrify(Bi)</span>
+<span class="ansi-green-fg">--&gt; 209</span><span class="ansi-red-fg">         </span>Bi <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span>dpotri<span class="ansi-blue-fg">(</span>LB<span class="ansi-blue-fg">,</span> lower<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    210</span>         diag<span class="ansi-blue-fg">.</span>add<span class="ansi-blue-fg">(</span>Bi<span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    211</span> 
+
+<span class="ansi-green-fg">/usr/local/miniconda3/envs/ml4ocn/lib/python3.6/site-packages/GPy/util/linalg.py</span> in <span class="ansi-cyan-fg">dpotri</span><span class="ansi-blue-fg">(A, lower)</span>
+<span class="ansi-green-intense-fg ansi-bold">    140</span> 
+<span class="ansi-green-intense-fg ansi-bold">    141</span>     A <span class="ansi-blue-fg">=</span> force_F_ordered<span class="ansi-blue-fg">(</span>A<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 142</span><span class="ansi-red-fg">     </span>R<span class="ansi-blue-fg">,</span> info <span class="ansi-blue-fg">=</span> lapack<span class="ansi-blue-fg">.</span>dpotri<span class="ansi-blue-fg">(</span>A<span class="ansi-blue-fg">,</span> lower<span class="ansi-blue-fg">=</span>lower<span class="ansi-blue-fg">)</span> <span class="ansi-red-fg">#needs to be zero here, seems to be a scipy bug</span>
+<span class="ansi-green-intense-fg ansi-bold">    143</span> 
+<span class="ansi-green-intense-fg ansi-bold">    144</span>     symmetrify<span class="ansi-blue-fg">(</span>R<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Predict with test set</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">ypred1</span><span class="p">,</span> <span class="n">ystd</span> <span class="o">=</span> <span class="n">gp_model_multi</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ypred</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">ystd</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">ypred2</span> <span class="o">=</span> <span class="n">gp_model_multi</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">ypred1</span><span class="p">,</span> <span class="n">ypred2</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred2</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred2</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred2</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;GP Model:</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Get Stats</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;MAE: </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">MSE: </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">R2: </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> 
+    <span class="sa">f</span><span class="s2">&quot; </span><span class="se">\n</span><span class="s2">Time: </span><span class="si">{</span><span class="n">t1</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Inverse transform predictions</span>
+<span class="c1"># ypred = pca_model.inverse_transform(ypred_red)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Define target transformer</span>
+<span class="n">pca_model</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Transform Targes</span>
+<span class="n">ytrain_red</span> <span class="o">=</span> <span class="n">pca_model</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">ytrain</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../meta_info/" title="Meta info" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Meta info
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2020 ISP-UV
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/IPL-UV" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://twitter.com/isp" target="_blank" rel="noopener" title="twitter.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://isp.uv.es" target="_blank" rel="noopener" title="isp.uv.es" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../../../assets/javascripts/vendor.f81b9e8b.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.23546af0.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.58d22e8e.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../../../../javascripts/extra.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+      
+    
+  </body>
+</html>

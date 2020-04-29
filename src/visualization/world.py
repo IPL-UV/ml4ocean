@@ -12,8 +12,10 @@ def plot_residuals(ypred: np.ndarray, ytest: np.ndarray, dataset: str = "train")
     # max_y = np.minimum(ypred.max(), ytest.max())
     if dataset == "train":
         id_line = np.linspace(-3, 3, 50)
+        
     elif dataset == "test":
         id_line = np.linspace(-6, -2, 50)
+
     else:
         raise ValueError(f"Unrecognized dataset: {dataset}")
 
